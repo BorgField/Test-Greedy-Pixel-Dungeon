@@ -17,7 +17,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.custom.utils.BallisticaFloat;
 import com.shatteredpixel.shatteredpixeldungeon.custom.utils.GME;
 import com.shatteredpixel.shatteredpixeldungeon.custom.utils.timing.VirtualActor;
-import com.shatteredpixel.shatteredpixeldungeon.custom.utils.timing.VirtualTimer;
 import com.shatteredpixel.shatteredpixeldungeon.custom.visuals.effects.BeamCustom;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Effects;

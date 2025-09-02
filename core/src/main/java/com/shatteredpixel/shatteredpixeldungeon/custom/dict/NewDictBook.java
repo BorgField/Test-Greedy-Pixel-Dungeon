@@ -52,7 +52,7 @@ public class NewDictBook extends ChallengeItem {
     @Override
     public void execute(Hero hero, String action) {
         if(action.equals(AC_READ)){
-            GameScene.show(new NewDictBook.WndNewDict());
+            GameScene.show(new WndNewDict());
         }else {
             super.execute(hero, action);
         }

@@ -9,7 +9,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
-import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
@@ -21,9 +20,6 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.Visual;
 import com.watabou.utils.Bundle;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 public class GameTracker extends Buff {
     {

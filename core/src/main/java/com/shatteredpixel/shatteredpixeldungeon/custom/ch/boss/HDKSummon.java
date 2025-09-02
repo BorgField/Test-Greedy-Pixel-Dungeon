@@ -9,7 +9,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Blindness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.BlobImmunity;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Degrade;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hex;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vulnerable;
@@ -70,7 +69,7 @@ public class HDKSummon {
             super.die(cause);
             boolean contain = false;
             for(Mob m: Dungeon.level.mobs.toArray(new Mob[0])){
-                if(m instanceof HDKSummon.HDKStatue){
+                if(m instanceof HDKStatue){
                     contain = true;
                     break;
                 }

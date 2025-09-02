@@ -1,14 +1,12 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.city;
 
+import static com.shatteredpixel.shatteredpixeldungeon.items.Item.updateQuickslot;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Degrade;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Warlock;
 import com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.MobHard;
 import com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
@@ -22,16 +20,12 @@ import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MobSprite;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.WarlockSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
-import com.watabou.noosa.MovieClip;
 import com.watabou.noosa.TextureFilm;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Callback;
 import com.watabou.utils.Random;
-
-import static com.shatteredpixel.shatteredpixeldungeon.items.Item.updateQuickslot;
 
 public class WarlockH extends MobHard implements Callback {
     {
@@ -228,18 +222,18 @@ public class WarlockH extends MobHard implements Callback {
 
             TextureFilm frames = new TextureFilm( texture, 12, 15 );
 
-            idle = new MovieClip.Animation( 2, true );
+            idle = new Animation( 2, true );
             idle.frames( frames, 0, 0, 0, 1, 0, 0, 1, 1 );
 
-            run = new MovieClip.Animation( 15, true );
+            run = new Animation( 15, true );
             run.frames( frames, 0, 2, 3, 4 );
 
-            attack = new MovieClip.Animation( 12, false );
+            attack = new Animation( 12, false );
             attack.frames( frames, 0, 5, 6 );
 
             zap = attack.clone();
 
-            die = new MovieClip.Animation( 15, false );
+            die = new Animation( 15, false );
             die.frames( frames, 0, 7, 8, 8, 9, 10 );
 
             play( idle );
@@ -264,7 +258,7 @@ public class WarlockH extends MobHard implements Callback {
         }
 
         @Override
-        public void onComplete( MovieClip.Animation anim ) {
+        public void onComplete( Animation anim ) {
             if (anim == zap) {
                 idle();
             }

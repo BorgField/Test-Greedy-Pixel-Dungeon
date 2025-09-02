@@ -207,15 +207,20 @@ public class TestMelee extends TestGenerator {
     }
 
     private int maxSlots(int t){
-        if(t <= 1) return 6;
-        if(t == 3) return 6;
-        else return 7;
+        switch (t){
+            case 1:return 7;
+            case 4: case 5:return 12;
+            case 2:default:return 9;
+            case 3:return 8;
+        }
     }
 
     private class SettingsWindow extends Window {
         private static final int WIDTH = 120;
-        private static final int BTN_SIZE = 18;
+        private static final int BTN_SIZE = 20;
         private static final int GAP = 2;
+        private static final int r_limit=5;
+        private int t_row;
         private OptionSlider o_tier;
         private OptionSlider o_level;
         private OptionSlider o_enchant_rarity;
@@ -243,6 +248,8 @@ public class TestMelee extends TestGenerator {
                     }
                     createWeaponArray();
                     createWeaponImage(all);
+                    t_row = (all.length-1)/r_limit+1;
+                    updateSelectedWeaponText();
                 }
             };
             o_tier.setSelectedValue(tier);
@@ -250,6 +257,7 @@ public class TestMelee extends TestGenerator {
             o_tier.setRect(0, GAP, WIDTH, 24);
             //this is executed in layout because the pos of buttom is affected by the whole window.
             createWeaponImage(all);
+            t_row = (all.length-1)/r_limit+1;
 
             t_selectedWeapon = PixelScene.renderTextBlock("", 6);
             t_selectedWeapon.text(Messages.get(this, "selected", Messages.get(all[Math.min(weapon_id, all.length-1)], "name")));
@@ -315,7 +323,7 @@ public class TestMelee extends TestGenerator {
             float top = o_tier.bottom() + GAP;
             int placed = 0;
             int length = all.length;
-            left = (WIDTH - BTN_SIZE * length) / 2f;
+            t_row = (length-1)/r_limit+1;
             for (int i = 0; i < length; ++i) {
                 final int j = i;
                 IconButton btn = new IconButton() {
@@ -330,7 +338,9 @@ public class TestMelee extends TestGenerator {
                 im.frame(ItemSpriteSheet.film.get(Objects.requireNonNull(Reflection.newInstance(all[i])).image));
                 im.scale.set(1f);
                 btn.icon(im);
-                btn.setRect(left + placed * BTN_SIZE, top, BTN_SIZE, BTN_SIZE);
+                left = (WIDTH - BTN_SIZE * ((i/r_limit+1<t_row)?r_limit:length-(t_row-1)*r_limit) )/2f;
+                btn.setRect(left+(placed-r_limit*(i/r_limit))*BTN_SIZE,top+GAP*(i/r_limit)+BTN_SIZE*(i/r_limit),BTN_SIZE,BTN_SIZE);
+
                 add(btn);
                 placed++;
                 iconButtons.add(btn);
@@ -340,7 +350,7 @@ public class TestMelee extends TestGenerator {
         private void layout() {
             o_tier.setRect(0, GAP, WIDTH, 24);
             //createWeaponImage(all);
-            t_selectedWeapon.setPos(0, GAP * 2 + o_tier.bottom() + BTN_SIZE);
+            t_selectedWeapon.setPos(0, GAP * 2 + o_tier.bottom() + BTN_SIZE*t_row);
             o_level.setRect(0, t_selectedWeapon.bottom() + GAP, WIDTH, 24);
             t_infoEnchant.setPos(0, GAP + o_level.bottom());
             o_enchant_rarity.setRect(0, GAP + t_infoEnchant.bottom(), WIDTH, 24);

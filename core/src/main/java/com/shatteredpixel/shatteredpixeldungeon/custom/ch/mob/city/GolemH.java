@@ -4,11 +4,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Golem;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.MobHard;
@@ -20,13 +17,11 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.GolemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MobSprite;
-import com.watabou.utils.BArray;
-import com.watabou.noosa.MovieClip;
 import com.watabou.noosa.TextureFilm;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.noosa.particles.Emitter;
+import com.watabou.utils.BArray;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Callback;
 import com.watabou.utils.PathFinder;
@@ -51,8 +46,8 @@ public class GolemH extends MobHard {
         properties.add(Property.INORGANIC);
         properties.add(Property.LARGE);
 
-        WANDERING = new GolemH.Wandering();
-        HUNTING = new GolemH.Hunting();
+        WANDERING = new Wandering();
+        HUNTING = new Hunting();
     }
 
     private int damageToElemental = 3;
@@ -309,18 +304,18 @@ public class GolemH extends MobHard {
 
             TextureFilm frames = new TextureFilm( texture, 17, 19 );
 
-            idle = new MovieClip.Animation( 4, true );
+            idle = new Animation( 4, true );
             idle.frames( frames, 0, 1 );
 
-            run = new MovieClip.Animation( 12, true );
+            run = new Animation( 12, true );
             run.frames( frames, 2, 3, 4, 5 );
 
-            attack = new MovieClip.Animation( 10, false );
+            attack = new Animation( 10, false );
             attack.frames( frames, 6, 7, 8 );
 
             zap = attack.clone();
 
-            die = new MovieClip.Animation( 15, false );
+            die = new Animation( 15, false );
             die.frames( frames, 9, 10, 11, 12, 13 );
 
             play( idle );
@@ -359,7 +354,7 @@ public class GolemH extends MobHard {
         }
 
         @Override
-        public synchronized void play(MovieClip.Animation anim, boolean force) {
+        public synchronized void play(Animation anim, boolean force) {
             if (teleParticles != null) teleParticles.on = false;
             super.play(anim, force);
         }
@@ -390,7 +385,7 @@ public class GolemH extends MobHard {
         private boolean died = false;
 
         @Override
-        public void onComplete( MovieClip.Animation anim ) {
+        public void onComplete( Animation anim ) {
             if (anim == die && !died) {
                 died = true;
                 emitter().burst( ElmoParticle.FACTORY, 4 );

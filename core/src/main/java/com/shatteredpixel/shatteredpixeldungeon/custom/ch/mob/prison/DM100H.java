@@ -5,13 +5,9 @@ import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CounterBuff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DM100;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.MobHard;
 import com.shatteredpixel.shatteredpixeldungeon.custom.messages.M;
 import com.shatteredpixel.shatteredpixeldungeon.custom.utils.timing.VirtualActor;
@@ -25,14 +21,12 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLightning;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.DM100Sprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MobSprite;
 import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.Image;
-import com.watabou.noosa.MovieClip;
 import com.watabou.noosa.TextureFilm;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.noosa.particles.Emitter;
@@ -269,7 +263,7 @@ public class DM100H extends MobHard implements Callback {
             if (hit( this, enemy, true )) {
                 int dmg = Random.NormalIntRange(3, 10);
                 dmg = Math.round(dmg * AscensionChallenge.statModifier(this));
-                enemy.damage( dmg, new DM100H.LightningBolt() );
+                enemy.damage( dmg, new LightningBolt() );
 
                 if (enemy.sprite.visible) {
                     enemy.sprite.centerEmitter().burst(SparkParticle.FACTORY, 3);
@@ -388,19 +382,19 @@ public class DM100H extends MobHard implements Callback {
 
             TextureFilm frames = new TextureFilm( texture, 16, 14 );
 
-            idle = new MovieClip.Animation( 1, true );
+            idle = new Animation( 1, true );
             idle.frames( frames, 0, 1 );
 
-            run = new MovieClip.Animation( 12, true );
+            run = new Animation( 12, true );
             run.frames( frames, 6, 7, 8, 9 );
 
-            attack = new MovieClip.Animation( 12, false );
+            attack = new Animation( 12, false );
             attack.frames( frames, 2, 3, 4, 0 );
 
-            zap = new MovieClip.Animation( 8, false );
+            zap = new Animation( 8, false );
             zap.frames( frames, 5, 5, 1 );
 
-            die = new MovieClip.Animation( 12, false );
+            die = new Animation( 12, false );
             die.frames( frames, 10, 11, 12, 13, 14, 15 );
 
             play( idle );
@@ -438,7 +432,7 @@ public class DM100H extends MobHard implements Callback {
         }
 
         @Override
-        public void onComplete( MovieClip.Animation anim ) {
+        public void onComplete( Animation anim ) {
             if (anim == zap) {
                 idle();
             }

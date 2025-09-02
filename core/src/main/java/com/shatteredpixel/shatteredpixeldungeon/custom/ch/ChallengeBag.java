@@ -1,14 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.ch;
 
-import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
-import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
-import com.shatteredpixel.shatteredpixeldungeon.items.Honeypot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
-import com.shatteredpixel.shatteredpixeldungeon.items.KingsCrown;
-//import com.shatteredpixel.shatteredpixeldungeon.items.MerchantsBeacon;
-import com.shatteredpixel.shatteredpixeldungeon.items.Stylus;
-import com.shatteredpixel.shatteredpixeldungeon.items.TengusMask;
-import com.shatteredpixel.shatteredpixeldungeon.items.Torch;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 

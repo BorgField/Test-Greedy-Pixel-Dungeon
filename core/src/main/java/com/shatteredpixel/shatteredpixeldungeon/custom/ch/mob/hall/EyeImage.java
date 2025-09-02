@@ -1,8 +1,5 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.hall;
 
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
-
 public class EyeImage extends EyeH{
     {
         maxLvl = -10000;

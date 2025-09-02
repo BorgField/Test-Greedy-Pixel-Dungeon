@@ -1,7 +1,5 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.utils;
 
-import static java.lang.Long.parseLong;
-
 public class SeedUtil {
 
     public static long parseSeed(String seed){

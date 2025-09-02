@@ -3,11 +3,8 @@ package com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.city;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.custom.ch.mob.MobHard;
 import com.shatteredpixel.shatteredpixeldungeon.custom.messages.M;
@@ -130,8 +127,8 @@ public class MonkH extends MobHard {
     @Override
     protected boolean act() {
         boolean result = super.act();
-        if (buff(MonkH.Focus.class) == null && state == HUNTING && focusCooldown <= 0) {
-            Buff.affect( this, MonkH.Focus.class );
+        if (buff(Focus.class) == null && state == HUNTING && focusCooldown <= 0) {
+            Buff.affect( this, Focus.class );
         }
         return result;
     }
@@ -152,7 +149,7 @@ public class MonkH extends MobHard {
 
     @Override
     public int defenseSkill( Char enemy ) {
-        if (buff(MonkH.Focus.class) != null && paralysed == 0 && state != SLEEPING){
+        if (buff(Focus.class) != null && paralysed == 0 && state != SLEEPING){
             return INFINITE_EVASION;
         }
         return super.defenseSkill( enemy );
@@ -160,7 +157,7 @@ public class MonkH extends MobHard {
 
     @Override
     public String defenseVerb() {
-        MonkH.Focus f = buff(MonkH.Focus.class);
+        Focus f = buff(Focus.class);
         if (f == null) {
             return super.defenseVerb();
         } else {

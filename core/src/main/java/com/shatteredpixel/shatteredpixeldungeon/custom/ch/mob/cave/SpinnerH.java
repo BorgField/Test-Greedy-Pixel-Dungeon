@@ -5,10 +5,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Web;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Dread;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Poison;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Terror;
@@ -19,7 +17,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.food.MysteryMeat;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MobSprite;
-import com.watabou.noosa.MovieClip;
 import com.watabou.noosa.TextureFilm;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
@@ -42,7 +39,7 @@ public class SpinnerH extends MobHard {
         loot = new MysteryMeat();
         lootChance = 0.125f;
 
-        FLEEING = new SpinnerH.Fleeing();
+        FLEEING = new Fleeing();
     }
 
     @Override
@@ -245,18 +242,18 @@ public class SpinnerH extends MobHard {
 
             TextureFilm frames = new TextureFilm( texture, 16, 16 );
 
-            idle = new MovieClip.Animation( 10, true );
+            idle = new Animation( 10, true );
             idle.frames( frames, 0, 0, 0, 0, 0, 1, 0, 1 );
 
-            run = new MovieClip.Animation( 15, true );
+            run = new Animation( 15, true );
             run.frames( frames, 0, 2, 0, 3 );
 
-            attack = new MovieClip.Animation( 12, false );
+            attack = new Animation( 12, false );
             attack.frames( frames, 0, 4, 5, 0 );
 
             zap = attack.clone();
 
-            die = new MovieClip.Animation( 12, false );
+            die = new Animation( 12, false );
             die.frames( frames, 6, 7, 8, 9 );
 
             play( idle );
@@ -293,7 +290,7 @@ public class SpinnerH extends MobHard {
         }
 
         @Override
-        public void onComplete( MovieClip.Animation anim ) {
+        public void onComplete( Animation anim ) {
             if (anim == zap) {
                 play( run );
             }

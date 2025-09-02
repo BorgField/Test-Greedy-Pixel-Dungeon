@@ -1,10 +1,8 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.ch.mimic;
 
-import com.badlogic.gdx.utils.IntMap;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
-import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.watabou.utils.Bundle;
 
 public class MimicStatusAffactor extends Buff {

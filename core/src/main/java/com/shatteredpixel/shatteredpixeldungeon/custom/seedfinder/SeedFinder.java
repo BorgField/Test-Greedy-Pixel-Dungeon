@@ -1,7 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.seedfinder;
 
 import com.badlogic.gdx.Gdx;
-import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;

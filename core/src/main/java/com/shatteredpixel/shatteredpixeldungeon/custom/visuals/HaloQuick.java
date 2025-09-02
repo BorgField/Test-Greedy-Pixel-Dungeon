@@ -1,7 +1,6 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.visuals;
 
 import com.badlogic.gdx.graphics.Pixmap;
-import com.watabou.gltextures.SmartTexture;
 import com.watabou.gltextures.TextureCache;
 import com.watabou.glwrap.Blending;
 import com.watabou.noosa.Game;
