@@ -383,9 +383,9 @@ public class Dungeon {
 			level = new DeadEndLevel();
 		}
 
-		if (Dungeon.isChallenged(Challenges.MINIGAMES)) {
-			level = new NewLevel();
-		}
+//		if (Dungeon.isChallenged(Challenges.MINIGAMES)) {
+//			level = new NewLevel();
+//		}
 
 		//dead end levels get cleared, don't count as generated
 		if (!(level instanceof DeadEndLevel)){

@@ -84,7 +84,7 @@ public class Buff extends Actor {
 	public void detach() {
 		if (target.remove( this ) && target.sprite != null) fx( false );
 	}
-	
+
 	@Override
 	public boolean act() {
 		diactivate();
@@ -203,6 +203,14 @@ public class Buff extends Actor {
 	public static void detach( Char target, Class<? extends Buff> cl ) {
 		for ( Buff b : target.buffs( cl )){
 			b.detach();
+		}
+	}
+
+	public static void reduce(Char target, Class<? extends Buff> buffClass, float reduce) {
+		Buff buff = target.buff(buffClass);
+		if (buff != null) {
+			float remainingTime = buff.visualcooldown();
+			buff.spend(-reduce * remainingTime * target.resist(buffClass));
 		}
 	}
 }

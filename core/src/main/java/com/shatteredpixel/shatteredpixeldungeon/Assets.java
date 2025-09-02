@@ -61,52 +61,57 @@ public class Assets {
 		public static final String CITY_BOSS        = "environment/custom_tiles/city_boss.png";
 		public static final String HALLS_SP         = "environment/custom_tiles/halls_special.png";
 	}
-	
+
 	//TODO include other font assets here? Some are platform specific though...
 	public static class Fonts {
 		public static final String PIXELFONT= "fonts/pixel_font.png";
 	}
 
 	public static class Interfaces {
-		public static final String ARCS_BG  = "interfaces/arcs1.png";
-		public static final String ARCS_FG  = "interfaces/arcs2.png";
+		public static final String ARCS_BG     = "interfaces/arcs1.png";
+		public static final String ARCS_FG     = "interfaces/arcs2.png";
 
-		public static final String BANNERS  = "interfaces/banners.png";
-		public static final String BADGES   = "interfaces/badges.png";
-		public static final String LOCKED   = "interfaces/locked_badge.png";
+		public static final String BANNERS     = "interfaces/banners.png";
+		public static final String BANNERS_SPD  = "interfaces/spd/banners.png";
+		public static final String BADGES      = "interfaces/badges.png";
+		public static final String LOCKED      = "interfaces/locked_badge.png";
 
-		public static final String CHROME   = "interfaces/chrome.png";
-		public static final String ICONS    = "interfaces/icons.png";
-		public static final String STATUS   = "interfaces/status_pane.png";
-		public static final String MENU     = "interfaces/menu_pane.png";
-		public static final String MENU_BTN = "interfaces/menu_button.png";
-		public static final String TOOLBAR  = "interfaces/toolbar.png";
-		public static final String SHADOW   = "interfaces/shadow.png";
-		public static final String BOSSHP   = "interfaces/boss_hp.png";
+		public static final String CHROME      = "interfaces/chrome.png";
+		public static final String CHROME_SPD  = "interfaces/spd/chrome.png";
+		public static final String ICONS       = "interfaces/icons.png";
+		public static final String ICONS_SPD   = "interfaces/spd/icons.png";
+		public static final String STATUS      = "interfaces/status_pane.png";
+		public static final String STATUS_SPD  = "interfaces/spd/status_pane.png";
+		public static final String MENU        = "interfaces/menu_pane.png";
+		public static final String MENU_SPD    = "interfaces/spd/menu_pane.png";
+		public static final String MENU_BTN    = "interfaces/menu_button.png";
+		public static final String TOOLBAR     = "interfaces/toolbar.png";
+		public static final String TOOLBAR_SPD = "interfaces/spd/toolbar.png";
+		public static final String SHADOW      = "interfaces/shadow.png";
+		public static final String BOSSHP  	   = "interfaces/boss_hp.png";
+		public static final String BOSSHP_SPD  = "interfaces/spd/boss_hp.png";
+		public static final String SURFACE     = "interfaces/surface.png";
 
-		public static final String SURFACE  = "interfaces/surface.png";
+		public static final String BUFFS_SMALL        = "interfaces/buffs.png";
+		public static final String BUFFS_LARGE        = "interfaces/large_buffs.png";
 
-		public static final String BUFFS_SMALL      = "interfaces/buffs.png";
-		public static final String BUFFS_LARGE      = "interfaces/large_buffs.png";
+		public static final String TALENT_ICONS       = "interfaces/talent_icons.png";
+		public static final String TALENT_BUTTON      = "interfaces/talent_button.png";
+		public static final String TALENT_BUTTON_SPD  = "interfaces/spd/talent_button.png";
 
-		public static final String TALENT_ICONS     = "interfaces/talent_icons.png";
-		public static final String TALENT_BUTTON    = "interfaces/talent_button.png";
+		public static final String HERO_ICONS         = "interfaces/hero_icons.png";
 
-		public static final String HERO_ICONS       = "interfaces/hero_icons.png";
-
-		public static final String RADIAL_MENU      = "interfaces/radial_menu.png";
-
+		public static final String RADIAL_MENU     	  = "interfaces/radial_menu.png";
 
 		public static final String CARDFRONT		= "interfaces/card_front.png";
 		public static final String CARDBACK		= "interfaces/card_back.png";
 		public static final String CARDSLOT		= "interfaces/card_slot.png";
 		public static final String STATUSBLOCK		= "interfaces/status.png";
-		public static final String BLACK_CHESS = "interfaces/chess_black.png";
-		public static final String WHITE_CHESS = "interfaces/chess_white.png";
-		public static final String TARGET = "interfaces/target.png";
+		public static final String BLACK_CHESS       = "interfaces/chess_black.png";
+		public static final String WHITE_CHESS       = "interfaces/chess_white.png";
+		public static final String TARGET            = "interfaces/target.png";
 	}
 
-	//these points to resource bundles, not raw asset files
 	public static class Messages {
 		public static final String ACTORS   = "messages/actors/actors";
 		public static final String ITEMS    = "messages/items/items";
@@ -119,9 +124,8 @@ public class Assets {
 		public static final String WINDOWS  = "messages/windows/windows";
 
 		public static final String CUSTOM   = "messages/custom/custom";
-		public static final String EXPANSION= "messages/expansion/expansion";
 		public static final String TEXT     = "messages/text/text";
-
+		public static final String EXPANSION= "messages/expansion/expansion";
 		public static final String MINIGAMES   = "messages/minigames/minigames";
 	}
 
@@ -162,7 +166,6 @@ public class Assets {
 		public static final String HALLS_TENSE          = "music/halls_tense.ogg";
 		public static final String HALLS_BOSS           = "music/halls_boss.ogg";
 		public static final String HALLS_BOSS_FINALE    = "music/halls_boss_finale.ogg";
-
 		public static final String PVH		= "music/Grasswalk.ogg";
 	}
 
@@ -270,6 +273,8 @@ public class Assets {
 
 	public static class Sprites {
 		public static final String ITEMS        = "sprites/items.png";
+		public static final String ITEMS_TWO  = "sprites/items_two.png";
+		public static final String ITEMS_SPD    = "sprites/items_spd.png";
 		public static final String ITEM_ICONS   = "sprites/item_icons.png";
 
 		public static final String WARRIOR  = "sprites/warrior.png";
@@ -334,18 +339,18 @@ public class Assets {
 		public static final String PYLON    = "sprites/pylon.png";
 		public static final String DM200    = "sprites/dm200.png";
 		public static final String LOTUS    = "sprites/lotus.png";
-		public static final String NINJA_LOG= "sprites/ninja_log.png";
-		public static final String SPIRIT_HAWK= "sprites/spirit_hawk.png";
-		public static final String RED_SENTRY= "sprites/red_sentry.png";
-		public static final String CRYSTAL_WISP= "sprites/crystal_wisp.png";
-		public static final String CRYSTAL_GUARDIAN= "sprites/crystal_guardian.png";
-		public static final String CRYSTAL_SPIRE= "sprites/crystal_spire.png";
-		public static final String GNOLL_GUARD= "sprites/gnoll_guard.png";
+		public static final String NINJA_LOG        = "sprites/ninja_log.png";
+		public static final String SPIRIT_HAWK      = "sprites/spirit_hawk.png";
+		public static final String RED_SENTRY       = "sprites/red_sentry.png";
+		public static final String CRYSTAL_WISP     = "sprites/crystal_wisp.png";
+		public static final String CRYSTAL_GUARDIAN = "sprites/crystal_guardian.png";
+		public static final String CRYSTAL_SPIRE    = "sprites/crystal_spire.png";
+		public static final String GNOLL_GUARD      = "sprites/gnoll_guard.png";
 		public static final String GNOLL_SAPPER     = "sprites/gnoll_sapper.png";
 		public static final String GNOLL_GEOMANCER  = "sprites/gnoll_geomancer.png";
 		public static final String FUNGAL_SPINNER   = "sprites/fungal_spinner.png";
 		public static final String FUNGAL_SENTRY    = "sprites/fungal_sentry.png";
 		public static final String FUNGAL_CORE      = "sprites/fungal_core.png";
-		public static final String BOMB = "sprites/bomb.png";
+		public static final String BOMB 			= "sprites/bomb.png";
 	}
 }

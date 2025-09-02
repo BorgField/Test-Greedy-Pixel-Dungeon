@@ -45,7 +45,12 @@ public class Chrome {
 	}
 	
 	public static NinePatch get( Type type ) {
-		String Asset = Assets.Interfaces.CHROME;
+		String Asset ;
+		if (SPDSettings.ClassUI()) {
+			Asset = Assets.Interfaces.CHROME;
+		} else {
+			Asset = Assets.Interfaces.CHROME_SPD;
+		}
 		switch (type) {
 		case WINDOW:
 			return new NinePatch( Asset, 0, 0, 20, 20, 6 );

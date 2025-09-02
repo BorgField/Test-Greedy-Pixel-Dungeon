@@ -74,7 +74,7 @@ public class MenuPane extends Component {
 	protected void createChildren() {
 		super.createChildren();
 
-		bg = new Image(Assets.Interfaces.MENU);
+		bg = new Image(SPDSettings.ClassUI() ? Assets.Interfaces.MENU : Assets.Interfaces.MENU_SPD);
 		add(bg);
 
 		depthIcon = Icons.get(Dungeon.level.feeling);

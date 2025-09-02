@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.sprites;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.Gold;
@@ -74,28 +75,41 @@ public class ItemSprite extends MovieClip {
 	protected float shadowWidth     = 1f;
 	protected float shadowHeight    = 0.25f;
 	protected float shadowOffset    = 0.5f;
-	
+
+	private static String itemsui() {
+		int itemsUIValue = SPDSettings.ItemsUI();
+		switch (itemsUIValue) {
+			case 0:
+				return Assets.Sprites.ITEMS;
+			case 1:
+				return Assets.Sprites.ITEMS_TWO;
+			case 2:
+				return Assets.Sprites.ITEMS_SPD;
+			default:
+				return Assets.Sprites.ITEMS;
+		}
+	}
+
 	public ItemSprite() {
 		this( ItemSpriteSheet.SOMETHING, null );
 	}
-	
+
 	public ItemSprite( Heap heap ){
-		super(Assets.Sprites.ITEMS);
+		super(itemsui());
 		view( heap );
 	}
-	
+
 	public ItemSprite( Item item ) {
-		super(Assets.Sprites.ITEMS);
+		super(itemsui());
 		view( item );
 	}
-	
+
 	public ItemSprite( int image ){
 		this( image, null );
 	}
-	
+
 	public ItemSprite( int image, Glowing glowing ) {
-		super( Assets.Sprites.ITEMS );
-		
+		super( itemsui() );
 		view(image, glowing);
 	}
 	

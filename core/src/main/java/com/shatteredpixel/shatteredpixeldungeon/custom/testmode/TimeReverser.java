@@ -1,12 +1,12 @@
 package com.shatteredpixel.shatteredpixeldungeon.custom.testmode;
 
+import static com.shatteredpixel.shatteredpixeldungeon.actors.Actor.TICK;
+
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
 import java.util.ArrayList;
-
-import static com.shatteredpixel.shatteredpixeldungeon.actors.Actor.TICK;
 
 public class TimeReverser extends TestItem {
     {

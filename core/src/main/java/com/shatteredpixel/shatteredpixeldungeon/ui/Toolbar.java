@@ -44,6 +44,7 @@ import com.shatteredpixel.shatteredpixeldungeon.windows.WndKeyBindings;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndMessage;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndQuickBag;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndUseItem;
+import com.watabou.gltextures.TextureCache;
 import com.watabou.input.ControllerHandler;
 import com.watabou.input.GameAction;
 import com.watabou.input.KeyBindings;
@@ -719,19 +720,29 @@ public class Toolbar extends Component {
 		}
 
 		public void icon( int x, int y, int width, int height){
-			if (icon == null) icon = new Image( Assets.Interfaces.TOOLBAR );
+			if (icon == null) icon = new Image( SPDSettings.ClassUI() ? Assets.Interfaces.TOOLBAR : Assets.Interfaces.TOOLBAR_SPD );
 			add(icon);
 
 			icon.frame( x, y, width, height);
 		}
-		
+
 		@Override
 		protected void createChildren() {
 			super.createChildren();
-			
-			base = new Image( Assets.Interfaces.TOOLBAR );
+
+			base = new Image( SPDSettings.ClassUI() ? Assets.Interfaces.TOOLBAR : Assets.Interfaces.TOOLBAR_SPD );
 			add( base );
 		}
+
+//		@Override
+//		public void update() {
+//			super.update();
+//			if (SPDSettings.ClassUI()) {
+//				base.texture = TextureCache.get(Assets.Interfaces.TOOLBAR);
+//			} else {
+//				base.texture = TextureCache.get(Assets.Interfaces.TOOLBAR_SPD);
+//			}
+//		}
 		
 		@Override
 		protected void layout() {
