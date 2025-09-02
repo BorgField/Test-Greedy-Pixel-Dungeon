@@ -22,14 +22,11 @@
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
-import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.custom.messages.M;
-import com.shatteredpixel.shatteredpixeldungeon.custom.utils.CustomGameSettings;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
-import com.shatteredpixel.shatteredpixeldungeon.text.TextChallenges;
 import com.shatteredpixel.shatteredpixeldungeon.ui.CheckBox;
 import com.shatteredpixel.shatteredpixeldungeon.ui.IconButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
@@ -37,129 +34,228 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPane;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
-import com.shatteredpixel.shatteredpixeldungeon.utils.DungeonSeed;
-import com.watabou.noosa.Game;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.Image;
 import com.watabou.noosa.ui.Component;
 
 import java.util.ArrayList;
 
-
-
-public class WndChallenges extends Window {
+public class WndChallenges extends WndTabbed {
 
 	private static final int WIDTH		= 120;
-	private static final int HEIGHT		= 162;
+	private static final int HEIGHT 	= 152;
+	private static final int TTL_HEIGHT = 16;
 	private static final int BTN_HEIGHT = 16;
 	private static final int GAP        = 1;
 
-	private boolean editable;
+	private ChallengeTab challenge;
+	private DlcTab dlc;
+
+	//	private static boolean editable;
+	static boolean editable;
 	private ArrayList<CanScrollCheckBox> boxes;
+	private ArrayList<CanScrollCheckBox> dlcBoxes;
 	private ArrayList<CanScrollInfo> infos;
 
-	public WndChallenges( long checked, boolean editable ) {
+	public static int lastIdx = 0;
 
+	public WndChallenges( int checked, boolean editable ) {
 		super();
+		resize( WIDTH, HEIGHT);
+		WndChallenges.editable = editable;
 
-		resize(WIDTH, HEIGHT);
+		this.boxes = new ArrayList<>();
+		this.dlcBoxes = new ArrayList<>();
+		this.infos = new ArrayList<>();
 
-		this.editable = editable;
+		challenge = new ChallengeTab(checked);
+		add(challenge);
+		challenge.setRect(0, 0, WIDTH, HEIGHT);
+		dlc = new DlcTab(checked);
+		add(dlc);
+		dlc.setRect(0, 0, WIDTH, HEIGHT);
 
-		ScrollPane pane = new ScrollPane(new Component()) {
+		add(new IconTab(Icons.get(Icons.INFO)) {
 			@Override
-			public void onClick(float x, float y) {
-				int max_size = boxes.size();
-				for (int i = 0; i < max_size; ++i) {
-					if (boxes.get(i).onClick(x, y))
-						return;
-				}
-				max_size = infos.size();
-				for(int i = 0; i<max_size;++i){
-					if(infos.get(i).onClick(x,y)){
-						return;
+			protected void select( boolean value ) {
+				super.select( value );
+				if (selected) lastIdx = 0;
+				challenge.visible = challenge.active = selected;
+			}
+		});
+
+		add(new IconTab(Icons.get(Icons.BUFFS)) {
+			@Override
+			protected void select( boolean value ) {
+				super.select( value );
+				if (selected) lastIdx = 1;
+				dlc.visible = dlc.active = selected;
+			}
+		});
+		layoutTabs();
+		select(0);
+	}
+
+	private class ChallengeTab extends Component {
+		private ScrollPane scrollPane;
+		private Component content;
+
+
+		@Override
+		protected void createChildren() {
+			super.createChildren();
+			scrollPane = new ScrollPane(content = new Component()){
+				@Override
+				public void onClick(float x, float y) {
+					int max_size = boxes.size();
+					for (int i = 0; i < max_size; ++i) {
+						if (boxes.get(i).onClick(x, y))
+							return;
+					}
+					max_size = infos.size();
+					for(int i = 0; i<max_size;++i){
+						if(infos.get(i).onClick(x,y)){
+							return;
+						}
 					}
 				}
-			}
-		};
-		add(pane);
-		pane.setRect(0, GAP, WIDTH, HEIGHT - 2 * GAP);
-		Component content = pane.content();
-
-		boxes = new ArrayList<>();
-		infos = new ArrayList<>();
-
-		boolean isCustom = false;
-		float pos = 0;
-
-		for (int i = 0; i < Challenges.NAME_IDS.length; i++) {
-
-			final String challenge = Challenges.NAME_IDS[i];
-
-			if(i==0){
-				RenderedTextBlock block = PixelScene.renderTextBlock(10);
-				block.text(M.L(TextChallenges.class, "traditional"));
-				block.hardlight(TITLE_COLOR);
-				block.setPos((WIDTH - block.width()) / 2,
-						pos + GAP *4);
-				PixelScene.align(block);
-				content.add(block);
-				pos += block.height() + 8*GAP;
-			}
-
-			if(Challenges.NAME_IDS[i].equals("test_mode")){
-				RenderedTextBlock block = PixelScene.renderTextBlock(10);
-				block.text(M.L(TextChallenges.class, "expansion"));
-				block.hardlight(0xFF00FF);
-				block.setPos((WIDTH - block.width()) / 2,
-						pos + GAP *4);
-				PixelScene.align(block);
-				content.add(block);
-				pos += block.height() + 8*GAP;
-				isCustom = true;
-			}
-
-			CanScrollCheckBox cb = new CanScrollCheckBox( M.TL(isCustom ? TextChallenges.class : Challenges.class, challenge));
-			cb.checked((checked & Challenges.MASKS[i]) != 0);
-			cb.active = editable;
-			/*
-			if(Challenges.NAME_IDS[i].equals("mimic_dungeon")){
-				cb.active = false;
-				cb.checked(false);
-				cb.alpha(0.5f);
-			}
-
-			 */
-
-			if (i > 0) {
-				pos += GAP;
-			}
-			cb.setRect(0, pos, WIDTH - 16, BTN_HEIGHT);
-
-			content.add(cb);
-			boxes.add(cb);
-
-			boolean finalIsCustom = isCustom;
-			CanScrollInfo info = new CanScrollInfo(Icons.get(Icons.INFO)) {
-				@Override
-				protected void onClick() {
-					super.onClick();
-					ShatteredPixelDungeon.scene().add(
-							new WndMessage(M.L(finalIsCustom ? TextChallenges.class : Challenges.class, challenge + "_desc"))
-					);
-				}
 			};
-			info.setRect(cb.right(), pos, 16, BTN_HEIGHT);
-			infos.add(info);
-			content.add(info);
+			add(scrollPane);
+			scrollPane.scrollTo(0, 0);
+		}
+		ChallengeTab(int checked) {
+			super();
+			createChildren();
+			// 标题和普通挑战布局（同原WndChallenges）
+			RenderedTextBlock title = PixelScene.renderTextBlock( M.L(Challenges.class, "traditional"), 11 );
+			title.hardlight( TITLE_COLOR );
+			title.setPos(
+					(WIDTH - title.width()) / 2,
+					(TTL_HEIGHT - title.height()) / 2 - 2
+			);
+			content.add( title );
 
-			pos = cb.bottom();
+//			boxes = new ArrayList<>();
+			float pos = TTL_HEIGHT;
+			for (int i=0; i < Challenges.NAME_IDS.length; i++) {
+				if (i == 9) {break;}
+
+				final String challenge = Challenges.NAME_IDS[i];
+
+				CanScrollCheckBox cb = new CanScrollCheckBox( Messages.titleCase(Messages.get(Challenges.class, challenge)) );
+				cb.checked( (checked & Challenges.MASKS[i]) != 0 );
+				cb.active = editable;
+
+				if (i > 0) {
+					pos += GAP;
+				}
+				cb.setRect( 0, pos, WIDTH-16, BTN_HEIGHT );
+
+				content.add( cb );
+				WndChallenges.this.boxes.add( cb );
+
+				IconButton info = new IconButton(Icons.get(Icons.INFO)){
+					@Override
+					protected void onClick() {
+						super.onClick();
+						ShatteredPixelDungeon.scene().add(
+								new WndMessage(Messages.get(Challenges.class, challenge+"_desc"))
+						);
+					}
+				};
+				info.setRect(cb.right(), pos, 16, BTN_HEIGHT);
+				content.add(info);
+
+				pos = cb.bottom();
+				content.setSize(width, (int) pos + 6);
+			}
 		}
 
-		pos += GAP;
+		@Override
+		protected void layout() {
+			super.layout();
+			scrollPane.setRect(0, 0, width, height);
+		}
+	}
+	private class DlcTab extends Component {
+		private ScrollPane scrollPane;
+		private Component content;
 
+		@Override
+		protected void createChildren() {
+			super.createChildren();
+			scrollPane = new ScrollPane(content = new Component()){
+				@Override
+				public void onClick(float x, float y) {
+					int max_size = dlcBoxes.size();
+					for (int i = 0; i < max_size; ++i) {
+						if (dlcBoxes.get(i).onClick(x, y))
+							return;
+					}
+					max_size = infos.size();
+					for(int i = 0; i<max_size;++i){
+						if(infos.get(i).onClick(x,y)){
+							return;
+						}
+					}
+				}
+			};
+			add(scrollPane);
+			scrollPane.scrollTo(0, 0);
+		}
 
-		content.setSize(WIDTH, (int) pos + GAP*2 + 24);
-		pane.scrollTo(0, 0);
+		DlcTab(int checked) {
+			super();
+			createChildren();
+			// 标题和普通挑战布局（同原WndChallenges）
+			RenderedTextBlock title = PixelScene.renderTextBlock( M.L(Challenges.class, "expansion"), 11 );
+			title.hardlight( TITLE_COLOR );
+			title.setPos(
+					(WIDTH - title.width()) / 2,
+					(TTL_HEIGHT - title.height()) / 2 - 2
+			);
+			content.add( title );
+
+//			dlcBoxes = new ArrayList<>();
+			float pos = TTL_HEIGHT;
+			for (int i = 9; i < Challenges.NAME_IDS.length; i++) {
+
+				final String challenge = Challenges.NAME_IDS[i];
+
+				CanScrollCheckBox cb = new CanScrollCheckBox( Messages.titleCase(Messages.get(Challenges.class, challenge)) );
+				cb.checked( (checked & Challenges.MASKS[i]) != 0 );
+				cb.active = WndChallenges.this.editable;
+
+				if (i > 9) {
+					pos += GAP;
+				}
+				cb.setRect( 0, pos, WIDTH-16, BTN_HEIGHT );
+
+				content.add( cb );
+				WndChallenges.this.dlcBoxes.add( cb );
+
+				IconButton info = new IconButton(Icons.get(Icons.INFO)){
+					@Override
+					protected void onClick() {
+						super.onClick();
+						ShatteredPixelDungeon.scene().add(
+								new WndMessage(Messages.get(Challenges.class, challenge+"_desc"))
+						);
+					}
+				};
+				info.setRect(cb.right(), pos, 16, BTN_HEIGHT);
+				content.add(info);
+
+				pos = cb.bottom();
+				content.setSize(width, (int) pos + 6);
+			}
+		}
+
+		@Override
+		protected void layout() {
+			super.layout();
+			scrollPane.setRect(0, 0, width, height);
+		}
 	}
 
 	@Override
@@ -167,12 +263,19 @@ public class WndChallenges extends Window {
 
 		if (editable) {
 			int value = 0;
+			// 合并普通挑战
 			for (int i=0; i < boxes.size(); i++) {
-				if (boxes.get( i ).checked()) {
+				if (boxes.get(i).checked()) {
 					value |= Challenges.MASKS[i];
 				}
 			}
-			SPDSettings.challenges( value );
+			// 合并DLC挑战（从索引9开始）
+			for (int i=0; i < dlcBoxes.size(); i++) {
+				if (dlcBoxes.get(i).checked()) {
+					value |= Challenges.MASKS[i + 9];
+				}
+			}
+			SPDSettings.challenges(value);
 		}
 
 		super.onBackPressed();
@@ -211,27 +314,6 @@ public class WndChallenges extends Window {
 		protected void layout(){
 			super.layout();
 			hotArea.width = hotArea.height = 0;
-		}
-	}
-
-
-	public static class CanScrollButton extends RedButton {
-
-		public CanScrollButton(String label) {
-			super(label, 7);
-		}
-
-		@Override
-		protected void layout() {
-			super.layout();
-			hotArea.height = hotArea.width = 0;
-		}
-
-		protected boolean onClick(float x, float y){
-			if(!inside(x,y)) return false;
-			if(active) onClick();
-
-			return true;
 		}
 	}
 }

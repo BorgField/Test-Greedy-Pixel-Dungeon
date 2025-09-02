@@ -54,7 +54,6 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.shatteredpixel.shatteredpixeldungeon.utils.DungeonSeed;
 import com.watabou.noosa.ColorBlock;
 import com.watabou.noosa.Game;
-import com.watabou.noosa.Gizmo;
 import com.watabou.noosa.Group;
 import com.watabou.noosa.Image;
 import com.watabou.noosa.audio.Sample;
@@ -264,7 +263,8 @@ public class WndRanking extends WndTabbed {
 
 			int buttontop = HEIGHT - 16;
 
-			if (Dungeon.hero != null && Dungeon.seed != -1 && !Dungeon.daily){
+			if (Dungeon.hero != null && Dungeon.seed != -1 && !Dungeon.daily &&
+					(DeviceCompat.isDebug() || Badges.isUnlocked(Badges.Badge.VICTORY))){
 				final Image icon = Icons.get(Icons.SEED);
 				RedButton btnSeed = new RedButton(Messages.get(this, "copy_seed")){
 					@Override
@@ -431,15 +431,37 @@ public class WndRanking extends WndTabbed {
 
 			camera = WndRanking.this.camera;
 
-			//temp choice, should rework
-			WndChallenges wc = new WndChallenges(Dungeon.challenges, false){
-				@Override
-				public void onBackPressed() {
-					super.onBackPressed();
-				}
-			};
-            add(wc);
+			float pos = 0;
 
+			for (int i=0; i < Challenges.NAME_IDS.length; i++) {
+
+				final String challenge = Challenges.NAME_IDS[i];
+
+				CheckBox cb = new CheckBox( Messages.titleCase(Messages.get(Challenges.class, challenge)) );
+				cb.checked( (Dungeon.challenges & Challenges.MASKS[i]) != 0 );
+				cb.active = false;
+
+				if (i > 0) {
+					pos += 1;
+				}
+				cb.setRect( 0, pos, WIDTH-16, 15 );
+
+				add( cb );
+
+				IconButton info = new IconButton(Icons.get(Icons.INFO)){
+					@Override
+					protected void onClick() {
+						super.onClick();
+						ShatteredPixelDungeon.scene().add(
+								new WndMessage(Messages.get(Challenges.class, challenge+"_desc"))
+						);
+					}
+				};
+				info.setRect(cb.right(), pos, 16, 15);
+				add(info);
+
+				pos = cb.bottom();
+			}
 		}
 
 	}

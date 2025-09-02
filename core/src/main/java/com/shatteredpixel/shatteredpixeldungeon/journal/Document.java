@@ -257,7 +257,7 @@ public enum Document {
 
 	//pages and default states
 	static {
-		boolean debug = true;
+		boolean debug = DeviceCompat.isDebug();
 		//hero gets these when guidebook is collected
 		ADVENTURERS_GUIDE.pagesStates.put(GUIDE_INTRO,          debug ? READ : NOT_FOUND);
 		ADVENTURERS_GUIDE.pagesStates.put(GUIDE_EXAMINING,      debug ? READ : NOT_FOUND);

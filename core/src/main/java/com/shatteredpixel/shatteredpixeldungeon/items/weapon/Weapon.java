@@ -35,8 +35,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.duelist.El
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.BodyForm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.HolyWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.Smite;
-import com.shatteredpixel.shatteredpixeldungeon.custom.testmode.CustomWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.expansion.enchants.baseclasses.Inscription;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
@@ -120,23 +118,8 @@ abstract public class Weapon extends KindOfWeapon {
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
 	
-	public Inscription inscription;
-
-	@Override
-	public String desc() {
-		String string = super.desc();
-		if (inscription != null) {
-			string += ("\n\n" + inscription.desc());
-		}
-		return string;
-	};
-
 	@Override
 	public int proc( Char attacker, Char defender, int damage ) {
-
-		if(inscription != null && attacker == Dungeon.hero){
-			damage = inscription.proc(this, attacker, defender, damage);
-		}
 
 		boolean becameAlly = false;
 		boolean wasAlly = defender.alignment == Char.Alignment.ALLY;
@@ -232,8 +215,6 @@ abstract public class Weapon extends KindOfWeapon {
 		bundle.put( CURSE_INFUSION_BONUS, curseInfusionBonus );
 		bundle.put( MASTERY_POTION_BONUS, masteryPotionBonus );
 		bundle.put( AUGMENT, augment );
-
-		bundle.put("Inscription_for_weapon", inscription);
 	}
 	
 	@Override
@@ -247,9 +228,6 @@ abstract public class Weapon extends KindOfWeapon {
 		masteryPotionBonus = bundle.getBoolean( MASTERY_POTION_BONUS );
 
 		augment = bundle.getEnum(AUGMENT, Augment.class);
-
-		inscription = (Inscription) bundle.get("Inscription_for_weapon");
-		if(inscription != null) inscription.attachToWeapon(this);
 	}
 	
 	@Override
@@ -347,10 +325,7 @@ abstract public class Weapon extends KindOfWeapon {
 			reach += 2;
 		}
 		if (hasEnchant(Projecting.class, owner)){
-			if (this instanceof CustomWeapon) {
-				return reach + 1;
-			}
-			return reach + Math.round(enchantment.procChanceMultiplier(owner));
+			return reach + Math.round(Enchantment.genericProcChanceMultiplier(owner));
 		} else {
 			return reach;
 		}

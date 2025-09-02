@@ -57,6 +57,9 @@ public class SPDSettings extends GameSettings {
 	public static final String KEY_GRID 	    = "visual_grid";
 	public static final String KEY_CAMERA_FOLLOW= "camera_follow";
 	public static final String KEY_SCREEN_SHAKE = "screen_shake";
+	private static final String KEY_DARK	= "dark_ui";
+	private static final String KEY_ItemsUI	= "items_ui";
+
 	
 	public static void fullscreen( boolean value ) {
 		put( KEY_FULLSCREEN, value );
@@ -206,6 +209,15 @@ public class SPDSettings extends GameSettings {
 		return getBoolean( KEY_SLOTWATERSKIN, true );
 	}
 
+	public static void systemFont(boolean value){
+		put(KEY_SYSTEMFONT, value);
+	}
+
+	public static boolean systemFont(){
+		return getBoolean(KEY_SYSTEMFONT,
+				(language() == Languages.CHINESE ));
+	}
+
 	public static void vibration(boolean value){
 		put(KEY_VIBRATION, value);
 	}
@@ -226,6 +238,7 @@ public class SPDSettings extends GameSettings {
 	
 	public static final String KEY_LAST_CLASS	= "last_class";
 	public static final String KEY_CHALLENGES	= "challenges";
+	public static final String KEY_DLCSETTINGS  = "dlc_settings";
 	public static final String KEY_CUSTOM_SEED	= "custom_seed";
 	public static final String KEY_LAST_DAILY	= "last_daily";
 	public static final String KEY_INTRO		= "intro";
@@ -249,12 +262,19 @@ public class SPDSettings extends GameSettings {
 		return getInt( KEY_LAST_CLASS, 0, 0, 3 );
 	}
 	
-	public static void challenges( int value ) {
+	public static void challenges(int value ) {
 		put( KEY_CHALLENGES, value );
+	}
+	public static void dlcSettings(int dlcValue) {
+		put(KEY_DLCSETTINGS , dlcValue);
 	}
 	
 	public static int challenges() {
 		return getInt( KEY_CHALLENGES, 0, 0, Challenges.MAX_VALUE );
+	}
+
+	public static int dlcSettings() {
+		return getInt( KEY_DLCSETTINGS, 0, 0, Challenges.MAX_VALUE );
 	}
 
 	public static void customSeed( String value ){
@@ -318,6 +338,46 @@ public class SPDSettings extends GameSettings {
 	public static final String KEY_WIFI     = "wifi";
 
 	public static final String KEY_NEWS_LAST_READ = "news_last_read";
+
+	public static void news(boolean value){
+		put(KEY_NEWS, value);
+	}
+
+	public static boolean news(){
+		return getBoolean(KEY_NEWS, true);
+	}
+
+	public static void updates(boolean value){
+		put(KEY_UPDATES, value);
+	}
+
+	public static boolean updates(){
+		return getBoolean(KEY_UPDATES, true);
+	}
+
+	public static void betas(boolean value){
+		put(KEY_BETAS, value);
+	}
+
+	public static boolean betas(){
+		return getBoolean(KEY_BETAS, Game.version.contains("BETA") || Game.version.contains("RC"));
+	}
+
+	public static void WiFi(boolean value){
+		put(KEY_WIFI, value);
+	}
+
+	public static boolean WiFi(){
+		return getBoolean(KEY_WIFI, true);
+	}
+
+	public static void newsLastRead(long lastRead){
+		put(KEY_NEWS_LAST_READ, lastRead);
+	}
+
+	public static long newsLastRead(){
+		return getLong(KEY_NEWS_LAST_READ, 0);
+	}
 
 	//Audio
 	
@@ -398,59 +458,6 @@ public class SPDSettings extends GameSettings {
 		}
 	}
 
-	public static void systemFont(boolean value){
-		put(KEY_SYSTEMFONT, value);
-	}
-
-	public static boolean systemFont(){
-		return getBoolean(KEY_SYSTEMFONT,
-				(language() == Languages.CHINESE));
-	}
-
-	//Connectivity
-
-
-
-	public static void news(boolean value){
-		put(KEY_NEWS, value);
-	}
-
-	public static boolean news(){
-		return getBoolean(KEY_NEWS, true);
-	}
-
-	public static void updates(boolean value){
-		put(KEY_UPDATES, value);
-	}
-
-	public static boolean updates(){
-		return getBoolean(KEY_UPDATES, true);
-	}
-
-	public static void betas(boolean value){
-		put(KEY_BETAS, value);
-	}
-
-	public static boolean betas(){
-		return getBoolean(KEY_BETAS, Game.version.contains("BETA") || Game.version.contains("RC"));
-	}
-
-	public static void WiFi(boolean value){
-		put(KEY_WIFI, value);
-	}
-
-	public static boolean WiFi(){
-		return getBoolean(KEY_WIFI, true);
-	}
-
-	public static void newsLastRead(long lastRead){
-		put(KEY_NEWS_LAST_READ, lastRead);
-	}
-
-	public static long newsLastRead(){
-		return getLong(KEY_NEWS_LAST_READ, 0);
-	}
-
 	//Window management (desktop only atm)
 	
 	public static final String KEY_WINDOW_WIDTH     = "window_width";
@@ -484,5 +491,21 @@ public class SPDSettings extends GameSettings {
 
 	public static int fulLScreenMonitor(){
 		return getInt( KEY_FULLSCREEN_MONITOR, 0 );
+	}
+
+	public static void ClassUI(boolean value) {
+		put( KEY_DARK, value );
+	}
+
+	public static boolean ClassUI() {
+		return getBoolean(KEY_DARK, true);
+	}
+
+	public static void ItemsUI( int value ) {
+		put(KEY_ItemsUI, value);
+	}
+
+	public static int ItemsUI() {
+		return getInt(KEY_ItemsUI, 0, 0, 2);
 	}
 }

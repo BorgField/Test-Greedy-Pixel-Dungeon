@@ -3,7 +3,7 @@
  * Copyright (C) 2012-2015 Oleg Dolya
  *
  * Shattered Pixel Dungeon
- * Copyright (C) 2014-2025 Evan Debenham
+ * Copyright (C) 2014-2024 Evan Debenham
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,13 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.ui;
 
-import com.shatteredpixel.shatteredpixeldungeon.messages.Languages;
-import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
 import com.watabou.noosa.Game;
 import com.watabou.noosa.RenderedText;
 import com.watabou.noosa.ui.Component;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 public class RenderedTextBlock extends Component {
 
@@ -37,7 +36,7 @@ public class RenderedTextBlock extends Component {
 
 	private static final RenderedText SPACE = new RenderedText();
 	private static final RenderedText NEWLINE = new RenderedText();
-	
+
 	protected String text;
 	protected String[] tokens = null;
 	protected ArrayList<RenderedText> words = new ArrayList<>();
@@ -46,15 +45,45 @@ public class RenderedTextBlock extends Component {
 	private int size;
 	private float zoom;
 	private int color = -1;
-	
+
 	private int hightlightColor = Window.TITLE_COLOR;
+	private int RedColor = Window.R_COLOR;
+	private int GreenColor = Window.G_COLOR;
+	private int BlueColor = Window.ORAGNECOLOR;
+	private int PinkColor = Window.Pink_COLOR;
+	private int DeepColor = Window.DeepPK_COLOR;
+	private int BLACKColor = Window.CBLACK;
+	private int CyanColor = Window.CYAN_COLOR;
+
 	private boolean highlightingEnabled = true;
+	private boolean RedEnabled = true;
+	private boolean GreenEnabled = true;
+	private boolean BlueEnabled = true;
+	private boolean PinkEnabled = true;
+	private boolean DeepEnabled = true;
+	private boolean BlackEnabled = true;
+	private boolean CyanEnabled = true;
 
 	public static final int LEFT_ALIGN = 1;
 	public static final int CENTER_ALIGN = 2;
 	public static final int RIGHT_ALIGN = 3;
 	private int alignment = LEFT_ALIGN;
-	
+
+	private static final Pattern HEX_COLOR_PATTERN = Pattern.compile("^<#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})>$");
+	private static final String COLOR_END_TAG = "<RGB>";
+
+	//for manual text block splitting, a space between each word is assumed
+	public void tokens(String... words){
+		StringBuilder fullText = new StringBuilder();
+		for (String word : words) {
+			fullText.append(word);
+		}
+		text = fullText.toString();
+
+		tokens = words;
+		build();
+	}
+
 	public RenderedTextBlock(int size){
 		this.size = size;
 	}
@@ -68,23 +97,11 @@ public class RenderedTextBlock extends Component {
 		this.text = text;
 
 		if (text != null && !text.equals("")) {
-			
+
 			tokens = Game.platform.splitforTextBlock(text, multiline);
-			
+
 			build();
 		}
-	}
-
-	//for manual text block splitting, a space between each word is assumed
-	public void tokens(String... words){
-		StringBuilder fullText = new StringBuilder();
-		for (String word : words) {
-			fullText.append(word);
-		}
-		text = fullText.toString();
-
-		tokens = words;
-		build();
 	}
 
 	public void text(String text, int maxWidth){
@@ -111,34 +128,147 @@ public class RenderedTextBlock extends Component {
 
 	private synchronized void build(){
 		if (tokens == null) return;
-		
+
 		clear();
+
+		tokens = processColorText( tokens );
 		words = new ArrayList<>();
 		boolean highlighting = false;
-		for (String str : tokens){
+		boolean Redhighlighting = false;
+		boolean Greenhighlighting = false;
+		boolean Bluehighlighting = false;
+		boolean Pinkhighlighting = false;
+		boolean Deeppinkhighlighting = false;
+		boolean Blackhighlighting = false;
+		boolean Cyanhighlighting = false;
 
-			//if highlighting is enabled, '_' or '**' is used to toggle highlighting on or off
-			// the actual symbols are not rendered
-			if ((str.equals("_") || str.equals("**")) && highlightingEnabled){
+		int currentCustomColor = -1;
+		for (String str : tokens){
+			if ( HEX_COLOR_PATTERN.matcher( str ).matches() ) {
+				String hexColor = str.substring( 2, str.length() - 1 );
+				//如果是RGB格式则进行转换
+				if ( hexColor.length() == 3 ) {
+					// 将 #RGB 转换为 #RRGGBB
+					String r = hexColor.substring( 0, 1 );
+					String g = hexColor.substring( 1, 2 );
+					String b = hexColor.substring( 2, 3 );
+					hexColor = r + r + g + g + b + b;
+				}
+				try {
+					currentCustomColor = Integer.parseInt( hexColor, 16 );
+				} catch (NumberFormatException e) {
+					// 如果解析失败，忽略这个标记
+				}
+				continue;
+			}
+
+			// 检查颜色结束标记
+			if ( str.equals( COLOR_END_TAG ) ) {
+				currentCustomColor = -1;
+				continue;
+			}
+
+				/*
+			Ⅰ = 红色
+			Ⅱ = 绿色
+			Ⅲ = 蓝色
+			Ⅳ = 粉色
+			Ⅴ = 紫色
+			Ⅵ = 黑色
+			Ⅶ = 青色 */
+
+			if (str.equals("_") && highlightingEnabled){
 				highlighting = !highlighting;
+			} else if(str.equals("Ⅰ") && RedEnabled){
+				Redhighlighting = !Redhighlighting;
+			} else if(str.equals("Ⅱ") && GreenEnabled){
+				Greenhighlighting = !Greenhighlighting;
+			} else if(str.equals("Ⅲ") && BlueEnabled){
+				Bluehighlighting = !Bluehighlighting;
+			} else if(str.equals("Ⅳ") && PinkEnabled){
+				Pinkhighlighting = !Pinkhighlighting;
+			} else if(str.equals("Ⅴ") && DeepEnabled){
+				Deeppinkhighlighting = !Deeppinkhighlighting;
+			} else if(str.equals("Ⅵ") && BlackEnabled) {
+				Blackhighlighting = !Blackhighlighting;
+			} else if(str.equals("Ⅶ") && CyanEnabled){
+				Cyanhighlighting = !Cyanhighlighting;
 			} else if (str.equals("\n")){
 				words.add(NEWLINE);
-			} else if (str.equals(" ")){
+			} else if (str.equals(" ")) {
 				words.add(SPACE);
+
 			} else {
 				RenderedText word = new RenderedText(str, size);
-				
-				if (highlighting) word.hardlight(hightlightColor);
+
+				if ( currentCustomColor != -1 ) word.hardlight(currentCustomColor);
+				else if (highlighting) word.hardlight(hightlightColor);
 				else if (color != -1) word.hardlight(color);
+				else if (Redhighlighting) word.hardlight(RedColor);
+				else if (Greenhighlighting) word.hardlight(GreenColor);
+				else if (Bluehighlighting) word.hardlight(BlueColor);
+				else if (Pinkhighlighting) word.hardlight(PinkColor);
+				else if (Deeppinkhighlighting) word.hardlight(DeepColor);
+				else if (Blackhighlighting) word.hardlight(BLACKColor);
+				else if (Cyanhighlighting) word.hardlight(CyanColor);
 				word.scale.set(zoom);
-				
+
 				words.add(word);
 				add(word);
-				
+
 				if (height < word.height()) height = word.height();
 			}
 		}
 		layout();
+	}
+
+	// 处理颜色开始和结束标记
+	private synchronized String[] processColorText(String[] text){
+		ArrayList<String> newList = new ArrayList<>();
+		for ( String current : text ) {
+			// 处理颜色开始标记 <#XXXXXX> / <#XXX>
+			if ( current.contains( "<#" ) ) {
+				int start = current.indexOf( "<#" );
+				int end = current.indexOf( ">" );
+
+				// 如果找不到结束符号，直接添加整个字符串
+				if ( end == -1 || end < start ) {
+					newList.add( current );
+					continue;
+				}
+
+				if ( start > 0 ) {
+					newList.add( current.substring( 0, start ) );
+				}
+
+				newList.add( current.substring( start, end + 1 ) );
+
+				if ( end < current.length() - 1 ) {
+					newList.add( current.substring(end + 1 ) );
+				}
+
+				continue;
+			}
+
+			// 处理颜色结束标记 <RGB>
+			if (current.contains("<RGB>")) {
+				int start = current.indexOf("<RGB>");
+				int end = current.indexOf("B>");
+
+				if (start > 0) {
+					newList.add(current.substring(0, start));
+				}
+
+				newList.add(current.substring(start, end + 2));
+
+				if (end + 2 < current.length()) {
+					newList.add(current.substring(end + 2));
+				}
+				continue;
+			}
+			newList.add( current );
+		}
+		return newList.toArray( new String[ 0 ] );
 	}
 
 	public synchronized void zoom(float zoom){
@@ -155,28 +285,64 @@ public class RenderedTextBlock extends Component {
 			if (word != null) word.hardlight( color );
 		}
 	}
-	
+
 	public synchronized void resetColor(){
 		this.color = -1;
 		for (RenderedText word : words) {
 			if (word != null) word.resetColor();
 		}
 	}
-	
+
 	public synchronized void alpha(float value){
 		for (RenderedText word : words) {
 			if (word != null) word.alpha( value );
 		}
 	}
-	
+
 	public synchronized void setHightlighting(boolean enabled){
 		setHightlighting(enabled, Window.TITLE_COLOR);
 	}
-	
+
 	public synchronized void setHightlighting(boolean enabled, int color){
 		if (enabled != highlightingEnabled || color != hightlightColor) {
 			hightlightColor = color;
 			highlightingEnabled = enabled;
+			build();
+		}
+	}
+
+	public synchronized void RHightlighting(boolean enabled){
+		setHightlighting(enabled, Window.ORAGNECOLOR);
+	}
+
+	public synchronized void RHightlighting(boolean enabled, int color){
+		if (enabled != highlightingEnabled || color != hightlightColor) {
+			RedColor = color;
+			RedEnabled = enabled;
+			build();
+		}
+	}
+
+	public synchronized void GHightlighting(boolean enabled){
+		setHightlighting(enabled, Window.G_COLOR);
+	}
+
+	public synchronized void GHightlighting(boolean enabled, int color){
+		if (enabled != highlightingEnabled || color != hightlightColor) {
+			RedColor = color;
+			RedEnabled = enabled;
+			build();
+		}
+	}
+
+	public synchronized void BHightlighting(boolean enabled){
+		setHightlighting(enabled, Window.G_COLOR);
+	}
+
+	public synchronized void BHightlighting(boolean enabled, int color){
+		if (enabled != highlightingEnabled || color != hightlightColor) {
+			RedColor = color;
+			RedEnabled = enabled;
 			build();
 		}
 	}
@@ -214,10 +380,9 @@ public class RenderedTextBlock extends Component {
 		lines.add(curLine);
 
 		width = 0;
-		for (int i = 0; i < words.size(); i++){
-			RenderedText word = words.get(i);
+		for (RenderedText word : words){
 			if (word == SPACE){
-				x += 1.667f;
+				x += 1.5f;
 			} else if (word == NEWLINE) {
 				//newline
 				y += height+2f;
@@ -228,18 +393,7 @@ public class RenderedTextBlock extends Component {
 			} else {
 				if (word.height() > height) height = word.height();
 
-				float fullWidth = word.width();
-				int j = i+1;
-
-				//this is so that words split only by highlighting are still grouped in layout
-				//Chinese/Japanese always render every character separately without spaces however
-				while (Messages.lang() != Languages.CHINESE
-						&& j < words.size() && words.get(j) != SPACE && words.get(j) != NEWLINE){
-					fullWidth += words.get(j).width() - 0.667f;
-					j++;
-				}
-
-				if ((x - this.x) + fullWidth - 0.001f > maxWidth && !curLine.isEmpty()){
+				if ((x - this.x) + word.width() > maxWidth && !curLine.isEmpty()){
 					y += height+2f;
 					x = this.x;
 					nLines++;
@@ -254,10 +408,10 @@ public class RenderedTextBlock extends Component {
 				curLine.add(word);
 
 				if ((x - this.x) > width) width = (x - this.x);
-				
-				//Note that spacing currently doesn't factor in halfwidth and fullwidth characters
+
+				//TODO spacing currently doesn't factor in halfwidth and fullwidth characters
 				//(e.g. Ideographic full stop)
-				x -= 0.667f;
+				x -= 0.5f;
 
 			}
 		}
@@ -280,5 +434,8 @@ public class RenderedTextBlock extends Component {
 				}
 			}
 		}
+	}
+
+	protected void hardlight(float r, float g, float b) {
 	}
 }

@@ -68,6 +68,7 @@ public class WndSettings extends WndTabbed {
 	private DataTab     data;
 	private AudioTab    audio;
 	private LangsTab    langs;
+	private ExtendTab   extend;
 
 	public static int last_index = 0;
 
@@ -190,7 +191,25 @@ public class WndSettings extends WndTabbed {
 
 		layoutTabs();
 
-		if (tabs.size() == 5 && last_index >= 3){
+		extend = new ExtendTab();
+		extend.setSize(width, 0);
+		height = Math.max(height, audio.height());
+		add( extend );
+
+		add( new IconTab(Icons.get(Icons.CHANGES)){
+			@Override
+			protected void select(boolean value) {
+				super.select(value);
+				extend.visible = extend.active = value;
+				if (value) last_index = 6;
+			}
+		});
+
+		resize(width, (int)Math.ceil(height));
+
+		layoutTabs();
+
+		if (tabs.size() == 6 && last_index >= 3){
 			//input tab isn't visible
 			select(last_index-1);
 		} else {
@@ -698,6 +717,79 @@ public class WndSettings extends WndTabbed {
 				chkVibrate.setRect(0, chkFont.bottom() + GAP, width, BTN_HEIGHT);
 				height = chkVibrate.bottom();
 			}
+		}
+
+	}
+
+	private static class ExtendTab extends Component {
+
+		RenderedTextBlock title;
+		ColorBlock sep1;
+		CheckBox ClassUI;
+		ColorBlock sep2;
+		OptionSlider ItemsUI;
+
+		@Override
+		protected void createChildren() {
+			title = PixelScene.renderTextBlock(Messages.get(this, "title"), 9);
+			title.hardlight(TITLE_COLOR);
+			add(title);
+
+			sep1 = new ColorBlock(1, 1, 0xFF000000);
+			add(sep1);
+
+			ClassUI = new CheckBox(Messages.get(this, "toggle_ui")) {
+				@Override
+				protected void onClick() {
+					super.onClick();
+					SPDSettings.ClassUI(checked());
+				}
+			};
+			ClassUI.checked(SPDSettings.ClassUI());
+			add(ClassUI);
+
+//			sep2 = new ColorBlock(1, 1, 0xFF000000);
+//			add(sep2);
+
+			ItemsUI = new OptionSlider(
+					Messages.get(this, "items_ui"),
+					Messages.get(this, "ui_1"),
+					Messages.get(this, "ui_2"),
+					0, 2) {
+				@Override
+				protected void onChange() {
+					SPDSettings.ItemsUI(getSelectedValue());
+				}
+			};
+			ItemsUI.setSelectedValue(SPDSettings.ItemsUI());
+			add(ItemsUI);
+
+		}
+
+		@Override
+		protected void layout() {
+//			float GAP = 2;
+			float bottom = y + GAP;
+
+			title.setPos((width - title.width()) / 2, bottom);
+			bottom += title.bottom() + 2;
+
+			sep1.size(width, 1);
+			sep1.y = bottom;
+			bottom += sep1.height() + 2*GAP;
+
+			if (width > 200) {
+				ClassUI.setRect(0, bottom, width / 2 - 1, BTN_HEIGHT);
+				ItemsUI.setRect(width / 2 + 1, bottom, width / 2 - 1, SLIDER_HEIGHT);
+				bottom += ItemsUI.height() + 2*GAP;
+			} else {
+				ClassUI.setRect(0, bottom, width, BTN_HEIGHT);
+				bottom += ClassUI.height() + 2*GAP;
+				ItemsUI.setRect(0, bottom, width, SLIDER_HEIGHT);
+				bottom += ItemsUI.height() + 2*GAP;
+			}
+
+			height = bottom;
 		}
 
 	}

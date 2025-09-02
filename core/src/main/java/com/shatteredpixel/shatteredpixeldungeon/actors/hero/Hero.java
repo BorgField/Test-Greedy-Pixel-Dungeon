@@ -21,10 +21,11 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.hero;
 
+import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Bones;
-import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
@@ -108,6 +109,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HornOfPlenty;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.MasterThievesArmband;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TalismanOfForesight;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TimekeepersHourglass;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.WheelChair;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster;
 import com.shatteredpixel.shatteredpixeldungeon.items.journal.Guidebook;
 import com.shatteredpixel.shatteredpixeldungeon.items.keys.CrystalKey;
@@ -120,6 +122,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfExperience
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfMight;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfDivineInspiration;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurst;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.DarkGold;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.Pickaxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfAccuracy;
@@ -139,11 +142,13 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.HeroLongSword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Quarterstaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.RoundShield;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sai;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Scimitar;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.TendonHookSickle;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
@@ -278,6 +283,18 @@ public class Hero extends Char {
 
 		if (hasTalent(Talent.STRONGMAN)){
 			strBonus += (int)Math.floor(STR * (0.03f + 0.05f*pointsInTalent(Talent.STRONGMAN)));
+		}
+
+		KindOfWeapon sickle = belongings.weapon;
+		if (sickle instanceof TendonHookSickle) {
+			TendonHookSickle tendon = (TendonHookSickle) sickle;
+			if (tendon.isEquipped(this) && tendon.getPotionsSTR()) {
+				strBonus += 1;
+			}
+		}
+
+		if( buff(PotionOfBurst.Burst.class)!= null){
+			strBonus += 10;
 		}
 
 		return STR + strBonus;
@@ -447,7 +464,7 @@ public class Hero extends Char {
 		}
 		Buff.affect( this, Regeneration.class );
 		Buff.affect( this, Hunger.class );
-		Buff.affect(this, GameTracker.class);
+		Buff.affect( this, GameTracker.class);
 	}
 	
 	public int tier() {
@@ -708,11 +725,6 @@ public class Hero extends Char {
 		}
 
 		speed = AscensionChallenge.modifyHeroSpeed(speed);
-
-		if(Dungeon.isChallenged(Challenges.ELITE_BOSSES) && Dungeon.bossLevel()){
-			speed = (speed - 1f)*0.25f + 1f;
-			speed = Math.min(speed, 1.5f);
-		}
 		
 		return speed;
 		
@@ -739,7 +751,7 @@ public class Hero extends Char {
 			return true;
 		}
 
-		KindOfWeapon wep = Dungeon.hero.belongings.attackingWeapon();
+		KindOfWeapon wep = hero.belongings.attackingWeapon();
 
 		if (wep != null){
 			return wep.canReach(this, enemy.pos);
@@ -1256,8 +1268,8 @@ public class Hero extends Char {
 						//1 hunger spent total
 						if (Dungeon.level.map[action.dst] == Terrain.WALL_DECO){
 							DarkGold gold = new DarkGold();
-							if (gold.doPickUp( Dungeon.hero )) {
-								DarkGold existing = Dungeon.hero.belongings.getItem(DarkGold.class);
+							if (gold.doPickUp( hero )) {
+								DarkGold existing = hero.belongings.getItem(DarkGold.class);
 								if (existing != null && existing.quantity()%5 == 0){
 									if (existing.quantity() >= 40) {
 										GLog.p(Messages.get(DarkGold.class, "you_now_have", existing.quantity()));
@@ -1429,7 +1441,7 @@ public class Hero extends Char {
 			Buff.affect(this, HoldFast.class).pos = pos;
 		}
 		if (hasTalent(Talent.PATIENT_STRIKE)){
-			Buff.affect(Dungeon.hero, Talent.PatientStrikeTracker.class).pos = Dungeon.hero.pos;
+			Buff.affect(hero, Talent.PatientStrikeTracker.class).pos = hero.pos;
 		}
 		if (!fullRest) {
 			if (sprite != null) {
@@ -1825,6 +1837,10 @@ public class Hero extends Char {
 			if (subClass == HeroSubClass.FREERUNNER){
 				Buff.affect(this, Momentum.class).gainStack();
 			}
+
+			if (buff(WheelChair.wheelRecharge.class) != null) {
+				buff(WheelChair.wheelRecharge.class).gainStack();
+			}
 			
 			sprite.move(pos, step);
 			move(step);
@@ -2029,6 +2045,11 @@ public class Hero extends Char {
 			
 			Badges.validateLevelReached();
 		}
+
+		if (belongings.weapon() instanceof HeroLongSword) {
+			HeroLongSword longsword = (HeroLongSword) belongings.weapon();
+			longsword.gainExp(exp);
+		}
 	}
 	
 	public int maxExp() {
@@ -2175,9 +2196,9 @@ public class Hero extends Char {
 		Dungeon.observe();
 		GameScene.updateFog();
 				
-		Dungeon.hero.belongings.identify();
+		hero.belongings.identify();
 
-		int pos = Dungeon.hero.pos;
+		int pos = hero.pos;
 
 		ArrayList<Integer> passable = new ArrayList<>();
 		for (Integer ofs : PathFinder.NEIGHBOURS8) {
@@ -2188,7 +2209,7 @@ public class Hero extends Char {
 		}
 		Collections.shuffle( passable );
 
-		ArrayList<Item> items = new ArrayList<>(Dungeon.hero.belongings.backpack.items);
+		ArrayList<Item> items = new ArrayList<>(hero.belongings.backpack.items);
 		for (Integer cell : passable) {
 			if (items.isEmpty()) {
 				break;

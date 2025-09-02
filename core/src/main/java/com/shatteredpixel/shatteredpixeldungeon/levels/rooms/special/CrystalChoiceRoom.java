@@ -21,7 +21,6 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special;
 
-import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
@@ -120,18 +119,11 @@ public class CrystalChoiceRoom extends SpecialRoom {
 			level.drop(reward, pos);
 		}
 
-		//尝试避免生成元素戒指和冲击波法杖
-		Item hidden;
-		int tries = 0;
-		do {
-			hidden = Generator.random(Random.oneOf(
-					Generator.Category.WAND,
-					Generator.Category.RING,
-					Generator.Category.ARTIFACT
-			));
-			tries++;
-		} while (Challenges.isItemBlocked(hidden) && tries < 100);
-
+		Item hidden = Generator.random(Random.oneOf(
+				Generator.Category.WAND,
+				Generator.Category.RING,
+				Generator.Category.ARTIFACT
+		));
 		Heap chest = level.drop(hidden, level.pointToCell(room2.center()));
 		chest.type = Heap.Type.CHEST;
 		//opening the chest is optional, so it doesn't count for exploration bonus

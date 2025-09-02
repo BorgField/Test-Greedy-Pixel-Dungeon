@@ -104,8 +104,6 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.FlameParticle;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal;
-import com.shatteredpixel.shatteredpixeldungeon.expansion.mergeManagers.charmodifier.CombatModifier;
-import com.shatteredpixel.shatteredpixeldungeon.expansion.mergeManagers.charmodifier.CombatModifier;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.curses.Bulk;
@@ -500,9 +498,7 @@ public abstract class Char extends Actor {
 				}
 			}
 
-			dmg = CombatModifier.INSTANCE.attackModify(this, enemy, dmg);
 			int effectiveDamage = enemy.defenseProc( this, Math.round(dmg) );
-			dr = CombatModifier.INSTANCE.defenseModify(this, enemy, dr, effectiveDamage);
 
 			//do not trigger on-hit logic if defenseProc returned a negative value
 			if (effectiveDamage >= 0) {
@@ -677,9 +673,6 @@ public abstract class Char extends Actor {
 		}
 		acuRoll *= accMulti;
 
-
-		acuRoll = CombatModifier.INSTANCE.accuracyModify(attacker, defender, acuRoll);
-
 		float defRoll = Random.Float(defStat);
 		if (defender.buff(Bless.class) != null) defRoll *= 1.25f;
 		if (defender.buff(  Hex.class) != null) defRoll *= 0.8f;
@@ -699,8 +692,6 @@ public abstract class Char extends Actor {
 			tuftDodged = true;
 		}
 		defRoll *= FerretTuft.evasionMultiplier();
-
-		defRoll = CombatModifier.INSTANCE.evasionModify(attacker, defender, defRoll);
 
 		return acuRoll >= defRoll;
 
@@ -964,7 +955,6 @@ public abstract class Char extends Actor {
 		if (buff( Paralysis.class ) != null) {
 			buff( Paralysis.class ).processDamage(dmg);
 		}
-		dmg = CombatModifier.INSTANCE.damage(this, dmg, src);
 
 		BrokenSeal.WarriorShield shield = buff(BrokenSeal.WarriorShield.class);
 		if (!(src instanceof Hunger)
@@ -976,8 +966,6 @@ public abstract class Char extends Actor {
 			sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(buff(BrokenSeal.WarriorShield.class).maxShield()), FloatingText.SHIELDING);
 			shield.activate();
 		}
-
-		dmg = CombatModifier.INSTANCE.damage(this, dmg, src);
 
 		int shielded = dmg;
 		dmg = ShieldBuff.processDamage(this, dmg, src);
@@ -1210,17 +1198,12 @@ public abstract class Char extends Actor {
 			}
 		}
 
-		if(!CombatModifier.INSTANCE.preAddBuff(this, buff)){
-			return false;
-		}
 		if (sprite != null && buff(Challenge.SpectatorFreeze.class) != null){
 			return false; //can't add buffs while frozen and game is loaded
 		}
 
 		buffs.add( buff );
 		if (Actor.chars().contains(this)) Actor.add( buff );
-
-		CombatModifier.INSTANCE.postAddBuff(this,buff);
 
 		if (sprite != null && buff.announced) {
 			switch (buff.type) {
