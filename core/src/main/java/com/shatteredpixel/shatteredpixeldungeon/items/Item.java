@@ -34,6 +34,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.TippedDart;
@@ -442,8 +443,12 @@ public class Item implements Bundlable {
 	}
 	
 	public boolean isUpgradable() {
-		return true;
-	}
+        return !banUpgraded;
+    }
+
+	public boolean isBanUpgraded() { return banUpgraded;}
+	public void setBanUpgraded(boolean value) { banUpgraded = value;}
+	private boolean banUpgraded = false;
 	
 	public boolean isIdentified() {
 		return levelKnown && cursedKnown;
@@ -531,7 +536,8 @@ public class Item implements Bundlable {
 	}
 	
 	public String desc() {
-		return Messages.get(this, "desc");
+		return Messages.get(this, "desc")
+				+(isBanUpgraded() ? "\n\n" + Messages.get(Scroll.class, "copyBan_desc") : "");
 	}
 	
 	public int quantity() {
@@ -582,6 +588,7 @@ public class Item implements Bundlable {
 	private static final String QUICKSLOT		= "quickslotpos";
 	private static final String KEPT_LOST       = "kept_lost";
 	private static final String CUSTOM_NOTE_ID = "custom_note_id";
+	private static final String BAN_UPGRADED   = "ban_upgraded";
 	
 	@Override
 	public void storeInBundle( Bundle bundle ) {
@@ -595,6 +602,7 @@ public class Item implements Bundlable {
 		}
 		bundle.put( KEPT_LOST, keptThoughLostInvent );
 		if (customNoteID != -1)     bundle.put(CUSTOM_NOTE_ID, customNoteID);
+		bundle.put(BAN_UPGRADED, banUpgraded);
 	}
 	
 	@Override
@@ -621,6 +629,7 @@ public class Item implements Bundlable {
 
 		keptThoughLostInvent = bundle.getBoolean( KEPT_LOST );
 		if (bundle.contains(CUSTOM_NOTE_ID))    customNoteID = bundle.getInt(CUSTOM_NOTE_ID);
+		banUpgraded = bundle.getBoolean(BAN_UPGRADED);
 	}
 
 	public int targetingPos( Hero user, int dst ){

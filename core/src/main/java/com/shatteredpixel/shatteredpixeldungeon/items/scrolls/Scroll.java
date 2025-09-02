@@ -29,7 +29,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
-import com.shatteredpixel.shatteredpixeldungeon.custom.buffs.AbsoluteBlindness;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.ItemStatusHandler;
@@ -70,6 +69,10 @@ public abstract class Scroll extends Item {
 	public static final String AC_READ	= "READ";
 	
 	protected static final float TIME_TO_READ	= 1f;
+
+	public boolean copy = false;
+	public boolean isCopy() { return copy; }
+	public void setCopy(boolean copy) { this.copy = copy; }
 
 	private static final LinkedHashMap<String, Integer> runes = new LinkedHashMap<String, Integer>() {
 		{
@@ -179,7 +182,7 @@ public abstract class Scroll extends Item {
 			
 			if (hero.buff(MagicImmune.class) != null){
 				GLog.w( Messages.get(this, "no_magic") );
-			} else if (hero.buff( Blindness.class ) != null || hero.buff(AbsoluteBlindness.class) != null) {
+			} else if (hero.buff( Blindness.class ) != null) {
 				GLog.w( Messages.get(this, "blinded") );
 			} else if (hero.buff(UnstableSpellbook.bookRecharge.class) != null
 					&& hero.buff(UnstableSpellbook.bookRecharge.class).isCursed()
@@ -236,11 +239,13 @@ public abstract class Scroll extends Item {
 		}
 		return this;
 	}
-	
+
 	@Override
 	public String name() {
-		return isKnown() ? super.name() : Messages.get(this, rune);
+		return (isCopy() ? Messages.get(this, "copy_name") : "")
+				+ (isKnown() ? super.name() : Messages.get(this, rune));
 	}
+
 
 	@Override
 	public String info() {
@@ -250,7 +255,8 @@ public abstract class Scroll extends Item {
 
 	@Override
 	public String desc() {
-		return isKnown() ? super.desc() : Messages.get(this, "unknown_desc");
+		return (isKnown() ? super.desc() : Messages.get(this, "unknown_desc"))
+				+(isCopy() ? "\n\n" + Messages.get(this, "copy_desc") : "");
 	}
 	
 	@Override
@@ -284,30 +290,38 @@ public abstract class Scroll extends Item {
 	public int energyVal() {
 		return 6 * quantity;
 	}
-	
+
+	@Override
+	public boolean isSimilar(Item item) {
+		// 同类、同等级、同copy状态才可堆叠
+		return super.isSimilar(item)
+				&& item instanceof Scroll
+				&& ((Scroll)item).copy == this.copy;
+	}
+
 	public static class PlaceHolder extends Scroll {
-		
+
 		{
 			image = ItemSpriteSheet.SCROLL_HOLDER;
 		}
-		
+
 		@Override
 		public boolean isSimilar(Item item) {
 			return ExoticScroll.regToExo.containsKey(item.getClass())
 					|| ExoticScroll.regToExo.containsValue(item.getClass());
 		}
-		
+
 		@Override
 		public void doRead() {}
-		
+
 		@Override
 		public String info() {
 			return "";
 		}
 	}
-	
+
 	public static class ScrollToStone extends Recipe {
-		
+
 		private static HashMap<Class<?extends Scroll>, Class<?extends Runestone>> stones = new HashMap<>();
 		static {
 			stones.put(ScrollOfIdentify.class,      StoneOfIntuition.class);
@@ -323,7 +337,7 @@ public abstract class Scroll extends Item {
 			stones.put(ScrollOfTransmutation.class, StoneOfAugmentation.class);
 			stones.put(ScrollOfUpgrade.class,       StoneOfEnchantment.class);
 		}
-		
+
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
 			if (ingredients.size() != 1
@@ -331,21 +345,23 @@ public abstract class Scroll extends Item {
 					|| !stones.containsKey(ingredients.get(0).getClass())){
 				return false;
 			}
-			
+
 			return true;
 		}
-		
+
 		@Override
 		public int cost(ArrayList<Item> ingredients) {
 			return 0;
 		}
-		
+
+		private static int Count = 0;
+
 		@Override
 		public Item brew(ArrayList<Item> ingredients) {
 			if (!testIngredients(ingredients)) return null;
-			
+
 			Scroll s = (Scroll) ingredients.get(0);
-			
+
 			s.quantity(s.quantity() - 1);
 			if (ShatteredPixelDungeon.scene() instanceof AlchemyScene){
 				if (!s.isIdentified()){
@@ -354,21 +370,134 @@ public abstract class Scroll extends Item {
 			} else {
 				s.identify();
 			}
-			
-			return Reflection.newInstance(stones.get(s.getClass())).quantity(2);
+
+			if (Random.Int(12)<=0){
+				ScrollOfBlank blank =new ScrollOfBlank();
+				blank.identify().collect();
+				GLog.i(Messages.get(this, "blank_get"));
+				Count=0;
+			} else {
+				Count++;
+				if (Count%24==0){
+					ScrollOfBlank blank =new ScrollOfBlank();
+					blank.identify().collect();
+					GLog.i(Messages.get(this, "blank_get"));
+				}
+			}
+
+			int c = s.isCopy() ? 1 : 2;
+			return Reflection.newInstance(stones.get(s.getClass())).quantity(c);
 		}
-		
+
 		@Override
 		public Item sampleOutput(ArrayList<Item> ingredients) {
 			if (!testIngredients(ingredients)) return null;
-			
-			Scroll s = (Scroll) ingredients.get(0);
 
-			if (!s.isKnown()){
-				return new Runestone.PlaceHolder().quantity(2);
+			Scroll scroll = (Scroll) ingredients.get(0);
+
+			int c = scroll.isCopy() ? 1 : 2;
+			if (!scroll.isKnown()){
+				return new Runestone.PlaceHolder().quantity(c);
 			} else {
-				return Reflection.newInstance(stones.get(s.getClass())).quantity(2);
+				return Reflection.newInstance(stones.get(scroll.getClass())).quantity(c);
 			}
 		}
+	}
+
+	public static Scroll sample = null;
+
+	public static class ScrollToCopy extends Recipe {
+
+		@Override
+		public boolean testIngredients(ArrayList<Item> ingredients) {
+			if (ingredients.size() != 2) return false;
+			boolean hasScroll = false;
+			boolean hasBlank = false;
+
+			for (Item item : ingredients) {
+				if (item instanceof ScrollOfBlank) {
+					hasBlank = true;
+				} else if (item instanceof Scroll
+						&& !((Scroll) item).isCopy()
+						&& !(item instanceof ExoticScroll)) {
+					hasScroll = true;
+				}
+			}
+			return hasScroll && hasBlank;
+		}
+
+		@Override
+		public int cost(ArrayList<Item> ingredients) {
+			return 5;
+		}
+
+		@Override
+		public Item brew(ArrayList<Item> ingredients) {
+			if (!testIngredients(ingredients)) return null;
+
+			// 1. 提取原材料
+			Scroll original = null;
+			ScrollOfBlank blank = null;
+			for (Item item : ingredients) {
+				if (item instanceof ScrollOfBlank) {
+					blank = (ScrollOfBlank) item;
+				} else if (item instanceof Scroll) {
+					original = (Scroll) item;
+				}
+			}
+			if (original == null || blank == null) return null;
+
+			// 2. 减少数量（确保数量 > 0）
+			original.quantity(original.quantity() - 1);
+			blank.quantity(blank.quantity() - 1);
+
+			// 3. 生成副本
+			Scroll copy = (Scroll) original;
+			copy.quantity(2);
+			copy.setCopy(true);
+
+			return copy;
+		}
+
+		@Override
+		public Item sampleOutput(ArrayList<Item> ingredients) {
+			if (ingredients == null || ingredients.isEmpty()) return null;
+
+			// 1. 提取原始卷轴类型
+			Scroll original = null;
+			for (Item item : ingredients) {
+				if (item instanceof Scroll && !(item instanceof ScrollOfBlank)) {
+					original = (Scroll) item;
+					break;
+				}
+			}
+			if (original == null) return null;
+
+			// 2. 创建预览实例（不修改原物品）
+			Scroll sample;
+			try {
+				sample = (Scroll) Reflection.newInstance(original.getClass());
+			} catch (Exception e) {
+				ShatteredPixelDungeon.reportException(e);
+				return null;
+			}
+			sample.quantity(2);
+			sample.setCopy(true);
+			return sample;
+		}
+
+	}
+
+	private static final String COPY = "copyScroll";
+	@Override
+	public void storeInBundle(Bundle bundle) {
+		super.storeInBundle(bundle);
+		bundle.put(COPY, copy); // 保存标记状态
+	}
+
+	@Override
+	public void restoreFromBundle(Bundle bundle) {
+		super.restoreFromBundle(bundle);
+		copy = bundle.getBoolean(COPY); // 读取标记状态
 	}
 }

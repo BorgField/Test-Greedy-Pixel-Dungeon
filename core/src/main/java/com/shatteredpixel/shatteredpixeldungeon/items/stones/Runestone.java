@@ -26,9 +26,13 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
+import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.Recipe;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+
+import java.util.ArrayList;
 
 public abstract class Runestone extends Item {
 	
@@ -104,6 +108,41 @@ public abstract class Runestone extends Item {
 		@Override
 		public String info() {
 			return "";
+		}
+	}
+
+	public static class RuneActivation extends Recipe {
+
+		@Override
+		public boolean testIngredients(ArrayList<Item> ingredients) {
+			for (Item i : ingredients) {
+				if (i instanceof StoneOfBlank) {
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public int cost(ArrayList<Item> ingredients) {
+			return 3;
+		}
+
+		@Override
+		public Item brew(ArrayList<Item> ingredients) {
+			for (Item i : ingredients){
+				i.quantity(i.quantity()-1);
+			}
+
+			Item w = Generator.randomUsingDefaults(Generator.Category.STONE);
+			w.collect();
+
+			return sampleOutput(null);
+		}
+
+		@Override
+		public Item sampleOutput(ArrayList<Item> ingredients) {
+			return new Runestone.PlaceHolder();
 		}
 	}
 }

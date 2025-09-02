@@ -119,10 +119,12 @@ public abstract class ExoticScroll extends Scroll {
 	}
 	
 	public static class ScrollToExotic extends Recipe {
-		
+
 		@Override
 		public boolean testIngredients(ArrayList<Item> ingredients) {
-			if (ingredients.size() == 1 && regToExo.containsKey(ingredients.get(0).getClass())){
+			if (ingredients.size() == 1
+					&& regToExo.containsKey(ingredients.get(0).getClass())
+					&& !((Scroll) ingredients.get(0)).isCopy()){
 				return true;
 			}
 

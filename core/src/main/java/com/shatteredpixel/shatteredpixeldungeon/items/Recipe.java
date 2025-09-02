@@ -42,6 +42,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfIc
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfMight;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfToxicEssence;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.ExoticPotion;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.MiniPotion;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ExoticScroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.spells.Alchemize;
@@ -55,6 +56,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.spells.SummonElemental;
 import com.shatteredpixel.shatteredpixeldungeon.items.spells.TelekineticGrab;
 import com.shatteredpixel.shatteredpixeldungeon.items.spells.UnstableSpell;
 import com.shatteredpixel.shatteredpixeldungeon.items.spells.WildEnergy;
+import com.shatteredpixel.shatteredpixeldungeon.items.stones.Runestone;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.Trinket;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.TrinketCatalyst;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
@@ -173,6 +175,7 @@ public abstract class Recipe {
 	
 	private static Recipe[] oneIngredientRecipes = new Recipe[]{
 		new Scroll.ScrollToStone(),
+		new MiniPotion.PotionToMini(),
 		new ExoticPotion.PotionToExotic(),
 		new ExoticScroll.ScrollToExotic(),
 		new ArcaneResin.Recipe(),
@@ -193,7 +196,8 @@ public abstract class Recipe {
 		new SummonElemental.Recipe(),
 		new StewedMeat.oneMeat(),
 		new TrinketCatalyst.Recipe(),
-		new Trinket.UpgradeTrinket()
+		new Trinket.UpgradeTrinket(),
+		new Runestone.RuneActivation()
 	};
 	
 	private static Recipe[] twoIngredientRecipes = new Recipe[]{
@@ -209,7 +213,8 @@ public abstract class Recipe {
 		new CurseInfusion.Recipe(),
 		new ReclaimTrap.Recipe(),
 		new WildEnergy.Recipe(),
-		new StewedMeat.twoMeat()
+		new StewedMeat.twoMeat(),
+		new Scroll.ScrollToCopy()
 	};
 	
 	private static Recipe[] threeIngredientRecipes = new Recipe[]{

@@ -54,14 +54,14 @@ public class ScrollOfUpgrade extends InventoryScroll {
 
 	@Override
 	protected boolean usableOnItem(Item item) {
+		if (copy) {
+			if (item.level() > 2 || item.isBanUpgraded()) return false;}
 		return item.isUpgradable();
 	}
 
 	@Override
 	protected void onItemSelected( Item item ) {
-
 		GameScene.show(new WndUpgrade(this, item, identifiedByUse));
-
 	}
 
 	public void reShowSelector(boolean force){
@@ -71,7 +71,14 @@ public class ScrollOfUpgrade extends InventoryScroll {
 	}
 
 	public Item upgradeItem( Item item ){
-		upgrade( curUser );
+		if (copy) {
+			upgrade(curUser);
+			item.setBanUpgraded(true);
+			Degrade.detach(curUser, Degrade.class);
+		} else {
+			upgrade(curUser);
+			Degrade.detach(curUser, Degrade.class);
+		}
 
 		Degrade.detach( curUser, Degrade.class );
 

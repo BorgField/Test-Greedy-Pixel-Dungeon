@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfEnchantment;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.HeroLongSword;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -60,6 +61,9 @@ public class StoneOfAugmentation extends InventoryStone {
 	public void apply( Weapon weapon, Weapon.Augment augment ) {
 		
 		weapon.augment = augment;
+		if (weapon instanceof HeroLongSword) {
+			((HeroLongSword) weapon).updateAugment();
+		}
 		useAnimation();
 		ScrollOfUpgrade.upgrade(curUser);
 		if (!anonymous) {

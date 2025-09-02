@@ -29,6 +29,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
@@ -40,6 +41,8 @@ import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndUpgrade;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Random;
+
+import java.util.ArrayList;
 
 public class MagicalInfusion extends InventorySpell {
 	
@@ -120,9 +123,22 @@ public class MagicalInfusion extends InventorySpell {
 	}
 	
 	public static class Recipe extends com.shatteredpixel.shatteredpixeldungeon.items.Recipe.SimpleRecipe {
-		
+
+		@Override
+		public boolean testIngredients(ArrayList<Item> ingredients) {
+			if (ingredients.size() == 1) {
+				Item item = ingredients.get(0);
+				if (item instanceof Scroll) {
+					Scroll scroll = (Scroll) item;
+					if (scroll.getClass() == ScrollOfUpgrade.class &&!scroll.isCopy()) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
 		{
-			inputs =  new Class[]{ScrollOfUpgrade.class};
+			inputs =  new Class[]{ ScrollOfUpgrade.class};
 			inQuantity = new int[]{1};
 			
 			cost = 12;
@@ -130,6 +146,5 @@ public class MagicalInfusion extends InventorySpell {
 			output = MagicalInfusion.class;
 			outQuantity = 1;
 		}
-		
 	}
 }

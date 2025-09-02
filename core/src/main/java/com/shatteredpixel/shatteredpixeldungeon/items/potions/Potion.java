@@ -45,6 +45,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfCor
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfShroudingFog;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfSnapFreeze;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfStormClouds;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurning;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Terrain;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -117,6 +118,9 @@ public class Potion extends Item {
 		mustThrowPots.add(PotionOfShroudingFog.class);
 		mustThrowPots.add(PotionOfStormClouds.class);
 		
+		//mini potions
+		mustThrowPots.add(PotionOfBurning.class);
+
 		//also all brews except unstable, hardcoded
 	}
 	
