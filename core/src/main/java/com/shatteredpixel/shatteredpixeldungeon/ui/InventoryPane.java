@@ -3,7 +3,7 @@
  * Copyright (C) 2012-2015 Oleg Dolya
  *
  * Shattered Pixel Dungeon
- * Copyright (C) 2014-2025 Evan Debenham
+ * Copyright (C) 2014-2024 Evan Debenham
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,10 +81,10 @@ public class InventoryPane extends Component {
 	private ArrayList<BagButton> bags;
 
 	public static final int WIDTH = 187;
-	public static final int HEIGHT = 82;
+	public static final int HEIGHT = 98;
 
 	private static final int SLOT_WIDTH = 17;
-	private static final int SLOT_HEIGHT = 24;
+	private static final int SLOT_HEIGHT = 22;
 
 	private WndBag.ItemSelector selector;
 
@@ -114,8 +114,11 @@ public class InventoryPane extends Component {
 	@Override
 	protected void createChildren() {
 
-		bg = Chrome.get(Chrome.Type.TOAST_TR_HEAVY);
+		bg = Chrome.get(Chrome.Type.TOAST_TR);
 		add(bg);
+
+		bg2 = Chrome.get(Chrome.Type.TOAST_TR);
+		add(bg2);
 
 		blocker = new PointerArea(0, 0, PixelScene.uiCamera.width, PixelScene.uiCamera.height){
 			@Override
@@ -176,7 +179,7 @@ public class InventoryPane extends Component {
 		add(promptTxt);
 
 		bagItems = new ArrayList<>();
-		for (int i = 0; i < 20; i++){
+		for (int i = 0; i < 30; i++){
 			InventorySlot btn = new InventoryPaneSlot(null);
 			bagItems.add(btn);
 			add(btn);
@@ -208,9 +211,10 @@ public class InventoryPane extends Component {
 		width = WIDTH;
 		height = HEIGHT;
 
-		bg.x = x;
-		bg.y = y;
+		bg.x = bg2.x = x;
+		bg.y = bg2.y = y;
 		bg.size(width, height);
+		bg2.size(width, height);
 
 		float left = x+4;
 		for (InventorySlot i : equipped){
@@ -257,17 +261,18 @@ public class InventoryPane extends Component {
 
 		super.layout();
 	}
-	
+
 	public void alpha( float value ){
 		bg.alpha( value );
-		
+		bg2.alpha( value );
+
 		for (InventorySlot slot : equipped){
 			slot.alpha( value );
 		}
 		for (InventorySlot slot : bagItems){
 			slot.alpha( value );
 		}
-		
+
 		gold.alpha(value);
 		goldTxt.alpha(value);
 		energy.alpha(value);
@@ -310,7 +315,7 @@ public class InventoryPane extends Component {
 		}
 
 		int j = 0;
-		for (int i = 0; i < 20; i++){
+		for (int i = 0; i < 25; i++){
 			if (i == 0 && lastBag != stuff.backpack){
 				bagItems.get(i).item(lastBag);
 				continue;
@@ -387,7 +392,7 @@ public class InventoryPane extends Component {
 		} else if (selector.preferredBag() != null) {
 			Bag preferred = Dungeon.hero.belongings.getItem(selector.preferredBag());
 			if (preferred != null)  lastBag = preferred;
-			//if a specific preferred bag isn't present, then the relevant items will be in backpack
+				//if a specific preferred bag isn't present, then the relevant items will be in backpack
 			else                    lastBag = Dungeon.hero.belongings.backpack;
 		}
 		updateInventory();
@@ -654,7 +659,7 @@ public class InventoryPane extends Component {
 			bgBottom.y = y+1;
 			bgBottom.x = x;
 		}
-		
+
 		public void alpha( float value ){
 			bgTop.alpha(value);
 			bgBottom.alpha(value);
