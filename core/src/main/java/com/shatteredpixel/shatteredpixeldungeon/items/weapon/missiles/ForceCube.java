@@ -48,7 +48,7 @@ public class ForceCube extends MissileWeapon {
 	}
 
 	@Override
-	public void hitSound(float pitch) {
+	public void hitSound(float pitch, float volume) {
 		//no hitsound as it never hits enemies directly
 	}
 

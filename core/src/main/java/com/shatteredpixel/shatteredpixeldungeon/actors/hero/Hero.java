@@ -227,16 +227,17 @@ public class Hero extends Char {
 	public boolean resting = false;
 	
 	public Belongings belongings;
-	
+	public MultiWielding multiWielding;
+
 	public int STR;
-	
+
 	public float awareness;
-	
+
 	public int lvl = 1;
 	public int exp = 0;
-	
+
 	public int HTBoost = 0;
-	
+
 	private ArrayList<Mob> visibleEnemies;
 
 	//This list is maintained so that some logic checks can be skipped
@@ -248,23 +249,29 @@ public class Hero extends Char {
 
 		HP = HT = 20;
 		STR = STARTING_STR;
-		
+
 		belongings = new Belongings( this );
-		
+		multiWielding = new MultiWielding(
+				belongings::weapon,
+				belongings::weapon2,
+				belongings::weapon3,
+				belongings::weapon4
+		);
+
 		visibleEnemies = new ArrayList<>();
 	}
-	
+
 	public void updateHT( boolean boostHP ){
 		int curHT = HT;
-		
+
 		HT = 20 + 5*(lvl-1) + HTBoost;
 		float multiplier = RingOfMight.HTMultiplier(this);
 		HT = Math.round(multiplier * HT);
-		
+
 		if (buff(ElixirOfMight.HTBoost.class) != null){
 			HT += buff(ElixirOfMight.HTBoost.class).boost();
 		}
-		
+
 		if (boostHP){
 			HP += Math.max(HT - curHT, 0);
 		}
@@ -275,7 +282,7 @@ public class Hero extends Char {
 		int strBonus = 0;
 
 		strBonus += RingOfMight.strengthBonus( this );
-		
+
 		AdrenalineSurge buff = buff(AdrenalineSurge.class);
 		if (buff != null){
 			strBonus += buff.boost();
@@ -310,7 +317,7 @@ public class Hero extends Char {
 	private static final String LEVEL		= "lvl";
 	private static final String EXPERIENCE	= "exp";
 	private static final String HTBOOST     = "htboost";
-	
+
 	@Override
 	public void storeInBundle( Bundle bundle ) {
 
@@ -320,20 +327,20 @@ public class Hero extends Char {
 		bundle.put( SUBCLASS, subClass );
 		bundle.put( ABILITY, armorAbility );
 		Talent.storeTalentsInBundle( bundle, this );
-		
+
 		bundle.put( ATTACK, attackSkill );
 		bundle.put( DEFENSE, defenseSkill );
-		
+
 		bundle.put( STRENGTH, STR );
-		
+
 		bundle.put( LEVEL, lvl );
 		bundle.put( EXPERIENCE, exp );
-		
+
 		bundle.put( HTBOOST, HTBoost );
 
 		belongings.storeInBundle( bundle );
 	}
-	
+
 	@Override
 	public void restoreFromBundle( Bundle bundle ) {
 
@@ -348,15 +355,15 @@ public class Hero extends Char {
 		subClass = bundle.getEnum( SUBCLASS, HeroSubClass.class );
 		armorAbility = (ArmorAbility)bundle.get( ABILITY );
 		Talent.restoreTalentsFromBundle( bundle, this );
-		
+
 		attackSkill = bundle.getInt( ATTACK );
 		defenseSkill = bundle.getInt( DEFENSE );
-		
+
 		STR = bundle.getInt( STRENGTH );
 
 		belongings.restoreFromBundle( bundle );
 	}
-	
+
 	public static void preview( GamesInProgress.Info info, Bundle bundle ) {
 		info.level = bundle.getInt( LEVEL );
 		info.str = bundle.getInt( STRENGTH );
@@ -423,7 +430,7 @@ public class Hero extends Char {
 			return 0;
 		}
 	}
-	
+
 	public String className() {
 		return subClass == null || subClass == HeroSubClass.NONE ? heroClass.title() : subClass.title();
 	}
@@ -440,7 +447,7 @@ public class Hero extends Char {
 	@Override
 	public void hitSound(float pitch) {
 		if (!RingOfForce.fightingUnarmed(this)) {
-			belongings.attackingWeapon().hitSound(pitch);
+			belongings.attackingWeapon().hitSound(1, pitch);
 		} else if (RingOfForce.getBuffedBonus(this, RingOfForce.Force.class) > 0) {
 			//pitch deepens by 2.5% (additive) per point of strength, down to 75%
 			super.hitSound( pitch * GameMath.gate( 0.75f, 1.25f - 0.025f*STR(), 1f) );

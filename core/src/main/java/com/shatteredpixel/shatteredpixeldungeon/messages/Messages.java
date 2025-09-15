@@ -26,6 +26,7 @@ import com.badlogic.gdx.utils.I18NBundle;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
+import com.watabou.utils.DeviceCompat;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -48,6 +49,8 @@ public class Messages {
 	private static ArrayList<I18NBundle> bundles;
 	private static Languages lang;
 	private static Locale locale;
+	// 添加 baseNameX 字段（用于调试）
+	public static String baseNameX;
 
 	public static final String NO_TEXT_FOUND = "!!!NO TEXT FOUND!!!";
 
@@ -73,8 +76,7 @@ public class Messages {
 			Assets.Messages.SCENES,
 			Assets.Messages.UI,
 			Assets.Messages.WINDOWS,
-
-			Assets.Messages.CUSTOM,
+			Assets.Messages.CUSTOM, // 第二段新增的资源文件
 	};
 
 	static{
@@ -119,7 +121,13 @@ public class Messages {
 		return get(o.getClass(), k, args);
 	}
 
+	// 修改：将公共 get 方法改为调用私有方法，引入 baseName 参数
 	public static String get(Class c, String k, Object...args){
+		return get(c, k, null, args);
+	}
+
+	// 添加私有 get 方法，包含 baseName 参数（类似于第一段代码）
+	private static String get(Class c, String k, String baseName, Object...args){
 		String key;
 		if (c != null){
 			key = c.getName().replace("com.shatteredpixel.shatteredpixeldungeon.", "");
@@ -127,18 +135,30 @@ public class Messages {
 		} else
 			key = k;
 
+		// 保留第二段代码的改进：使用 Locale.ENGLISH 进行键转换（更通用）
 		String value = getFromBundle(key.toLowerCase(Locale.ENGLISH));
 		if (value != null){
 			if (args.length > 0) return format(value, args);
 			else return value;
 		} else {
+			// 添加第一段代码的调试逻辑：构造 baseName 用于调试
+			if (baseName == null) {
+				baseName = key;
+				baseNameX = baseName; // 设置调试字段
+				baseName = baseName.toLowerCase(Locale.ENGLISH); // 转换为小写，使用 English locale 保持一致性
+			}
 			//this is so child classes can inherit properties from their parents.
 			//in cases where text is commonly grabbed as a utility from classes that aren't mean to be instantiated
 			//(e.g. flavourbuff.dispTurns()) using .class directly is probably smarter to prevent unnecessary recursive calls.
 			if (c != null && c.getSuperclass() != null){
-				return get(c.getSuperclass(), k, args);
+				return get(c.getSuperclass(), k, baseName, args); // 传递 baseName
 			} else {
-				return NO_TEXT_FOUND;
+				// 添加第一段代码的调试输出：在调试模式和桌面环境下打印消息
+				if (DeviceCompat.isDebug() && DeviceCompat.isDesktop()){
+					System.out.println("[MissString]: "+baseName);
+				}
+				// 返回调试字符串，而不是 NO_TEXT_FOUND
+				return "Ms:"+baseName;
 			}
 		}
 	}
@@ -161,6 +181,7 @@ public class Messages {
 	 * String Utility Methods
 	 */
 
+	// 保留第二段代码的改进：使用当前 locale 进行格式化
 	public static String format( String format, Object...args ) {
 		try {
 			return String.format(locale(), format, args);
@@ -172,6 +193,7 @@ public class Messages {
 
 	private static HashMap<String, DecimalFormat> formatters;
 
+	// 保留第二段代码的改进：使用当前 locale 进行数字格式化
 	public static String decimalFormat( String format, double number ){
 		if (!formatters.containsKey(format)){
 			formatters.put(format, new DecimalFormat(format, DecimalFormatSymbols.getInstance(locale())));

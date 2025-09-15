@@ -36,6 +36,7 @@ import java.util.ArrayList;
 
 public class WheelChair extends Artifact {
     public static final String AC_JUMP       = "JUMP";
+    private boolean isBracelet = false;
 
     {
         image = ItemSpriteSheet.ROUND_SHIELD;
@@ -191,6 +192,23 @@ public class WheelChair extends Artifact {
         }
         return desc;
     }
+
+    public boolean isBracelet() {
+        return isBracelet;
+    }
+
+//    @Override
+//    public boolean isEquipped(Hero hero) {
+//        boolean equipped = super.isEquipped(hero);
+//        if (equipped) {
+//            isBracelet = true;
+//            GLog.i( "已装备" );
+//        } else {
+//            isBracelet = false;
+//            GLog.i( "未装备" );
+//        }
+//        return equipped;
+//    }
     private boolean movedLastTurn = true;
 
     public class wheelRecharge extends Artifact.ArtifactBuff {
