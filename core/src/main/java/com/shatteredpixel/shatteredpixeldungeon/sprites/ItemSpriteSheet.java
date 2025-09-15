@@ -649,7 +649,7 @@ public class ItemSpriteSheet {
 	public static final int MINI_IVORY    = EXOTIC_POTIONS+11;
 	static {
 		for (int i = MINI_POTIONS; i < MINI_POTIONS+16; i++)
-			assignItemRect(i, 12, 12);
+			assignItemRect(i, 13, 13);
 	}
 	
 	private static final int BREWS          =                               xy(1, 26);  //8 slots

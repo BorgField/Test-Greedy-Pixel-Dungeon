@@ -26,7 +26,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Amok;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Awareness;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Dread;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Light;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicalSight;
@@ -45,12 +44,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Ghost;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Imp;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Wandmaker;
 import com.shatteredpixel.shatteredpixeldungeon.custom.buffs.AbsoluteBlindness;
-import com.shatteredpixel.shatteredpixeldungeon.custom.ch.boss.HardDKLevel;
-import com.shatteredpixel.shatteredpixeldungeon.custom.ch.boss.HardDM300Level;
-import com.shatteredpixel.shatteredpixeldungeon.custom.ch.boss.HardGooLevel;
-import com.shatteredpixel.shatteredpixeldungeon.custom.ch.boss.HardTenguLevel;
-import com.shatteredpixel.shatteredpixeldungeon.custom.ch.boss.NewHDKLevel;
-import com.shatteredpixel.shatteredpixeldungeon.custom.ch.boss.YogRealLevel;
 import com.shatteredpixel.shatteredpixeldungeon.items.Amulet;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
@@ -81,7 +74,6 @@ import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.secret.SecretRoom;
 import com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special.SpecialRoom;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.minigames.NewLevel;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Toolbar;
@@ -181,7 +173,6 @@ public class Dungeon {
 				} else {
 					lim.count = 0;
 				}
-
 			}
 		}
 
@@ -317,8 +308,7 @@ public class Dungeon {
 					level = new SewerLevel();
 					break;
 				case 5:
-					if((Statistics.boss_enhance & 0x1) != 0) level = new HardGooLevel();
-					else level = new SewerBossLevel();
+					level = new SewerBossLevel();
 					break;
 				case 6:
 				case 7:
@@ -327,8 +317,7 @@ public class Dungeon {
 					level = new PrisonLevel();
 					break;
 				case 10:
-					if((Statistics.boss_enhance & 0x2) != 0) level = new HardTenguLevel();
-					else level = new PrisonBossLevel();
+					level = new PrisonBossLevel();
 					break;
 				case 11:
 				case 12:
@@ -337,8 +326,7 @@ public class Dungeon {
 					level = new CavesLevel();
 					break;
 				case 15:
-					if((Statistics.boss_enhance & 0x4) != 0) level =  new HardDM300Level();
-					else level = new CavesBossLevel();
+					level = new CavesBossLevel();
 					break;
 				case 16:
 				case 17:
@@ -347,8 +335,7 @@ public class Dungeon {
 					level = new CityLevel();
 					break;
 				case 20:
-					if((Statistics.boss_enhance & 0x8) != 0) level = new NewHDKLevel();//HardDKLevel();
-					else level = new CityBossLevel();
+					level = new CityBossLevel();
 					break;
 				case 21:
 				case 22:
@@ -357,8 +344,7 @@ public class Dungeon {
 					level = new HallsLevel();
 					break;
 				case 25:
-					if((Statistics.boss_enhance & 0x10) != 0) level = new YogRealLevel();
-					else level = new HallsBossLevel();
+					level = new HallsBossLevel();
 					break;
 				case 26:
 					level = new LastLevel();
@@ -380,10 +366,6 @@ public class Dungeon {
 		} else {
 			level = new DeadEndLevel();
 		}
-
-//		if (Dungeon.isChallenged(Challenges.MINIGAMES)) {
-//			level = new NewLevel();
-//		}
 
 		//dead end levels get cleared, don't count as generated
 		if (!(level instanceof DeadEndLevel)){
@@ -521,8 +503,8 @@ public class Dungeon {
 		if (hero.buff(AbsoluteBlindness.class) != null) {
 			hero.viewDistance = 0;
 		}
-		observe();
 
+		observe();
 		try {
 			saveAll();
 		} catch (IOException e) {
@@ -530,8 +512,6 @@ public class Dungeon {
 			/*This only catches IO errors. Yes, this means things can go wrong, and they can go wrong catastrophically.
 			But when they do the user will get a nice 'report this issue' dialogue, and I can fix the bug.*/
 		}
-
-
 	}
 
 	public static void dropToChasm( Item item ) {
