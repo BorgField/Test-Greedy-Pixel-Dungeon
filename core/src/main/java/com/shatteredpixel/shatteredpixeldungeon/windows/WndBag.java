@@ -28,12 +28,14 @@ import com.shatteredpixel.shatteredpixeldungeon.SPDAction;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.ShivaBangle;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.WheelChair;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.PotionBandolier;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.VelvetPouch;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
@@ -241,10 +243,13 @@ public class WndBag extends WndTabbed {
 
     // Equipped items
     Belongings stuff = hero.belongings;
-	boolean shivaWeapon = hero.buff(WheelChair.wheelRecharge.class) != null;
-    placeItem( stuff.weapon != null ? stuff.weapon : new Placeholder( ItemSpriteSheet.WEAPON_HOLDER ) );
-    placeItem( stuff.weapon2 != null ? stuff.weapon2 : new Placeholder( ItemSpriteSheet.WEAPON_HOLDER ) );
-
+	boolean shivaWeapon = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
+	placeItem(stuff.weapon != null ? stuff.weapon : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+	if (stuff.weapon instanceof MeleeWeapon && ((MeleeWeapon) stuff.weapon).isTwoHanded()) {
+		placeItem(new Placeholder(ItemSpriteSheet.X_NO));
+	} else {
+		placeItem(stuff.weapon2 != null ? stuff.weapon2 : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+	}
     placeItem( stuff.armor != null ? stuff.armor : new Placeholder( ItemSpriteSheet.ARMOR_HOLDER ) );
     placeItem( stuff.artifact != null ? stuff.artifact : new Placeholder( ItemSpriteSheet.ARTIFACT_HOLDER ) );
     placeItem( stuff.misc != null ? stuff.misc : new Placeholder( ItemSpriteSheet.SOMETHING ) );
@@ -252,11 +257,13 @@ public class WndBag extends WndTabbed {
 
     int equipped = 6;
 
-	if(shivaWeapon){
-		placeItem( stuff.weapon3 != null ? stuff.weapon3 : new Placeholder( ItemSpriteSheet.WEAPON_HOLDER ) );
-		placeItem( stuff.weapon4 != null ? stuff.weapon4 : new Placeholder( ItemSpriteSheet.WEAPON_HOLDER ) );
-		equipped += 2;
-		count+=2;
+	if (shivaWeapon) {
+		placeItem(stuff.weapon3 != null ? stuff.weapon3 : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+		if (stuff.weapon3 instanceof MeleeWeapon && ((MeleeWeapon) stuff.weapon3).isTwoHanded()) {
+			placeItem(new Placeholder(ItemSpriteSheet.X_NO));
+		} else {
+			placeItem(stuff.weapon4 != null ? stuff.weapon4 : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+		}
 	}
 
     // the container itself if it's not the root backpack

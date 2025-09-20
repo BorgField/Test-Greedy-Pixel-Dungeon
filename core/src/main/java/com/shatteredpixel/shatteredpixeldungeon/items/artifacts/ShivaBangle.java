@@ -1,7 +1,10 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.artifacts;
 
+import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
+
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -17,7 +20,7 @@ public class ShivaBangle extends Artifact {
     public boolean doEquip(Hero hero) {
         if (super.doEquip(hero)) {
             // 在这里添加装备时的触发逻辑
-            GLog.i(Messages.get(this, "equip_message"));
+            GLog.w(Messages.get(this, "equip_message"));
             activate(hero);
             return true;
         } else {
@@ -35,10 +38,10 @@ public class ShivaBangle extends Artifact {
     public boolean doUnequip(Hero hero, boolean collect, boolean single) {
         if (super.doUnequip(hero, collect, single)) {
             // 在这里添加卸下时的逻辑
-            if (activeBuff != null) {
-                activeBuff.detach();
-                activeBuff = null;
-            }
+            KindOfWeapon.unequipSlotGroup(hero, KindOfWeapon.WeaponSlot.PRIMARY_3, KindOfWeapon.WeaponSlot.PRIMARY_4);
+
+            KindOfWeapon.setWeaponInSlot(hero, KindOfWeapon.WeaponSlot.PRIMARY_3, null);
+            KindOfWeapon.setWeaponInSlot(hero, KindOfWeapon.WeaponSlot.PRIMARY_4, null);
             return true;
         } else {
             return false;
@@ -46,15 +49,17 @@ public class ShivaBangle extends Artifact {
     }
 
     @Override
-    public String info() {
-        StringBuilder info = new StringBuilder(super.info());
+    public String desc() {
+        String desc = super.desc();
 
-        if (isIdentified()) {
-            info.append("\n\n");
-            info.append(Messages.get(this, "desc"));
+        if (isEquipped( hero )){
+            desc += "\n\n";
+            if (cursed)
+                desc += Messages.get(this, "desc_cursed");
+            else
+                desc += Messages.get(this, "desc_equipped");
         }
-
-        return info.toString();
+        return desc;
     }
 
     @Override
@@ -84,15 +89,14 @@ public class ShivaBangle extends Artifact {
                 charge++;
                 partialCharge -= 1;
             }
-            // 你可以在这里添加充电时的特殊效果
         }
     }
 
     protected ArtifactBuff passiveBuff() {
-        return new ShivaBangleBuff();
+        return new MultiArmBlows();
     }
 
-    public class ShivaBangleBuff extends ArtifactBuff {
+    public class MultiArmBlows extends ArtifactBuff {
 
         @Override
         public boolean attachTo(Char target) {
@@ -106,7 +110,7 @@ public class ShivaBangle extends Artifact {
         @Override
         public void detach() {
             super.detach();
-            // 在这里添加分离效果时的逻辑
+
         }
 
         @Override
@@ -116,8 +120,5 @@ public class ShivaBangle extends Artifact {
             return true;
         }
     }
-
-    private static final String CHARGE = "charge";
-    private static final String PARTIALCHARGE = "partialcharge";
 
 }

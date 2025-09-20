@@ -197,18 +197,6 @@ public class WheelChair extends Artifact {
         return isBracelet;
     }
 
-//    @Override
-//    public boolean isEquipped(Hero hero) {
-//        boolean equipped = super.isEquipped(hero);
-//        if (equipped) {
-//            isBracelet = true;
-//            GLog.i( "已装备" );
-//        } else {
-//            isBracelet = false;
-//            GLog.i( "未装备" );
-//        }
-//        return equipped;
-//    }
     private boolean movedLastTurn = true;
 
     public class wheelRecharge extends Artifact.ArtifactBuff {

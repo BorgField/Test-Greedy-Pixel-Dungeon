@@ -62,7 +62,8 @@ import java.util.ArrayList;
 public class MeleeWeapon extends Weapon {
 
 	public static String AC_ABILITY = "ABILITY";
-	public static boolean twoHanded = false;
+	public boolean twoHanded = false;
+	public boolean isTwoHanded() {return twoHanded;}
 
 	@Override
 	public void activate(Char ch) {
