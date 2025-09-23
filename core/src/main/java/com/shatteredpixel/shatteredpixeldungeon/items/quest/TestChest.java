@@ -23,6 +23,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.CausticBrew;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.InfernalBrew;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.brews.ShockingBrew;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfMastery;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.ShivaBangle;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfBlank;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMagicMapping;
@@ -129,6 +130,7 @@ public class TestChest extends Item {
         items.add(new ScrollOfBlank().quantity(20).identify());
         items.add(new PotionOfStrength().quantity(0).identify());
         items.add(new WheelChair().quantity(1).identify());
+        items.add(new ShivaBangle().quantity(1).identify());
 
         return items;
     }

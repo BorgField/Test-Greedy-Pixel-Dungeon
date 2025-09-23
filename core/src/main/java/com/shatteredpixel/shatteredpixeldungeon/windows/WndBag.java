@@ -21,16 +21,21 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.windows;
 
+import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
+
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.SPDAction;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Belongings;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.ShivaBangle;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.WheelChair;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.PotionBandolier;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.ScrollHolder;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.VelvetPouch;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.PixelScene;
@@ -42,6 +47,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.QuickSlotButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RightClickMenu;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.input.GameAction;
 import com.watabou.input.KeyBindings;
 import com.watabou.input.KeyEvent;
@@ -128,7 +134,7 @@ public class WndBag extends WndTabbed {
 		resize( windowWidth, windowHeight );
 
 		int i = 1;
-		for (Bag b : Dungeon.hero.belongings.getBags()) {
+		for (Bag b : hero.belongings.getBags()) {
 			if (b != null) {
 				BagTab tab = new BagTab( b, i++ );
 				add( tab );
@@ -141,26 +147,26 @@ public class WndBag extends WndTabbed {
 	
 	public static WndBag lastBag( ItemSelector selector ) {
 		
-		if (lastBag != null && Dungeon.hero.belongings.backpack.contains( lastBag )) {
+		if (lastBag != null && hero.belongings.backpack.contains( lastBag )) {
 			
 			return new WndBag( lastBag, selector );
 			
 		} else {
 			
-			return new WndBag( Dungeon.hero.belongings.backpack, selector );
+			return new WndBag( hero.belongings.backpack, selector );
 			
 		}
 	}
 
 	public static WndBag getBag( ItemSelector selector ) {
 		if (selector.preferredBag() == Belongings.Backpack.class){
-			return new WndBag( Dungeon.hero.belongings.backpack, selector );
+			return new WndBag( hero.belongings.backpack, selector );
 
 		} else if (selector.preferredBag() != null){
-			Bag bag = Dungeon.hero.belongings.getItem( selector.preferredBag() );
+			Bag bag = hero.belongings.getItem( selector.preferredBag() );
 			if (bag != null)    return new WndBag( bag, selector );
 			//if a specific preferred bag isn't present, then the relevant items will be in backpack
-			else                return new WndBag( Dungeon.hero.belongings.backpack, selector );
+			else                return new WndBag( hero.belongings.backpack, selector );
 		}
 
 		return lastBag( selector );
@@ -234,42 +240,56 @@ public class WndBag extends WndTabbed {
 	}
 	
 	protected void placeItems( Bag container ) {
-		
-		// Equipped items
-		Belongings stuff = Dungeon.hero.belongings;
-		placeItem( stuff.weapon != null ? stuff.weapon : new Placeholder( ItemSpriteSheet.WEAPON_HOLDER ) );
-//		placeItem( stuff.offhand != null ? stuff.offhand : new Placeholder( ItemSpriteSheet.WEAPON_HOLDER ) );
-		placeItem( stuff.armor != null ? stuff.armor : new Placeholder( ItemSpriteSheet.ARMOR_HOLDER ) );
-		placeItem( stuff.artifact != null ? stuff.artifact : new Placeholder( ItemSpriteSheet.ARTIFACT_HOLDER ) );
-		placeItem( stuff.misc != null ? stuff.misc : new Placeholder( ItemSpriteSheet.SOMETHING ) );
-		placeItem( stuff.ring != null ? stuff.ring : new Placeholder( ItemSpriteSheet.RING_HOLDER ) );
 
-		int equipped = 6;
+    // Equipped items
+    Belongings stuff = hero.belongings;
+	boolean shivaWeapon = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
+	placeItem(stuff.weapon != null ? stuff.weapon : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+	if (stuff.weapon instanceof MeleeWeapon && ((MeleeWeapon) stuff.weapon).isTwoHanded()) {
+		placeItem(new Placeholder(ItemSpriteSheet.X_NO));
+	} else {
+		placeItem(stuff.weapon2 != null ? stuff.weapon2 : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+	}
+    placeItem( stuff.armor != null ? stuff.armor : new Placeholder( ItemSpriteSheet.ARMOR_HOLDER ) );
+    placeItem( stuff.artifact != null ? stuff.artifact : new Placeholder( ItemSpriteSheet.ARTIFACT_HOLDER ) );
+    placeItem( stuff.misc != null ? stuff.misc : new Placeholder( ItemSpriteSheet.SOMETHING ) );
+    placeItem( stuff.ring != null ? stuff.ring : new Placeholder( ItemSpriteSheet.RING_HOLDER ) );
 
-		//the container itself if it's not the root backpack
-		if (container != Dungeon.hero.belongings.backpack){
-			placeItem(container);
-			count--; //don't count this one, as it's not actually inside of itself
-		} else if (stuff.secondWep != null) {
-			//second weapon always goes to the front of view on main bag
-			placeItem(stuff.secondWep);
-			equipped++;
-		}
+    int equipped = 6;
 
-		// Items in the bag, except other containers (they have tags at the bottom)
-		for (Item item : container.items.toArray(new Item[0])) {
-			if (!(item instanceof Bag)) {
-				placeItem( item );
-			} else {
-				count++;
-			}
-		}
-		
-		// Free Space
-		while ((count - equipped) < container.capacity()) {
-			placeItem( null );
+	if (shivaWeapon) {
+		placeItem(stuff.weapon3 != null ? stuff.weapon3 : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
+		if (stuff.weapon3 instanceof MeleeWeapon && ((MeleeWeapon) stuff.weapon3).isTwoHanded()) {
+			placeItem(new Placeholder(ItemSpriteSheet.X_NO));
+		} else {
+			placeItem(stuff.weapon4 != null ? stuff.weapon4 : new Placeholder(ItemSpriteSheet.WEAPON_HOLDER));
 		}
 	}
+
+    // the container itself if it's not the root backpack
+    if (container != hero.belongings.backpack){
+        placeItem(container);
+        count--; // don't count this one, as it's not actually inside of itself
+    } else if (stuff.secondWep != null) {
+        // second weapon always goes to the front of view on main bag
+        placeItem(stuff.secondWep);
+        equipped++;
+    }
+
+    // Items in the bag, except other containers (they have tags at the bottom)
+    for (Item item : container.items.toArray(new Item[0])) {
+        if (!(item instanceof Bag)) {
+            placeItem( item );
+        } else {
+            count++;
+        }
+    }
+
+    // Free Space
+    while ((count - equipped) < container.capacity()) {
+        placeItem( null );
+    }
+}
 	
 	protected void placeItem( final Item item ) {
 
@@ -281,7 +301,7 @@ public class WndBag extends WndTabbed {
 		InventorySlot slot = new InventorySlot( item ){
 			@Override
 			protected void onClick() {
-				if (lastBag != item && !lastBag.contains(item) && !item.isEquipped(Dungeon.hero)){
+				if (lastBag != item && !lastBag.contains(item) && !item.isEquipped(hero)){
 
 					hide();
 
@@ -301,7 +321,7 @@ public class WndBag extends WndTabbed {
 
 			@Override
 			protected void onRightClick() {
-				if (lastBag != item && !lastBag.contains(item) && !item.isEquipped(Dungeon.hero)){
+				if (lastBag != item && !lastBag.contains(item) && !item.isEquipped(hero)){
 
 					hide();
 

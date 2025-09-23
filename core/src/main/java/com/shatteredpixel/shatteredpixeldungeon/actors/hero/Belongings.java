@@ -45,7 +45,9 @@ import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 public class Belongings implements Iterable<Item> {
 
@@ -71,15 +73,18 @@ public class Belongings implements Iterable<Item> {
 	}
 
 	public Backpack backpack;
-	
+
 	public Belongings( Hero owner ) {
 		this.owner = owner;
-		
+
 		backpack = new Backpack();
 		backpack.owner = owner;
 	}
 
 	public KindOfWeapon weapon = null;
+	public KindOfWeapon weapon2 = null;
+	public KindOfWeapon weapon3 = null;
+	public KindOfWeapon weapon4 = null;
 	public Armor armor = null;
 	public Artifact artifact = null;
 	public KindofMisc misc = null;
@@ -118,6 +123,30 @@ public class Belongings implements Iterable<Item> {
 	public KindOfWeapon weapon(){
 		if (!lostInventory() || (weapon != null && weapon.keptThroughLostInventory())){
 			return weapon;
+		} else {
+			return null;
+		}
+	}
+
+	public KindOfWeapon weapon2(){
+		if (!lostInventory() || (weapon2 != null && weapon2.keptThroughLostInventory())){
+			return weapon2;
+		} else {
+			return null;
+		}
+	}
+
+	public KindOfWeapon weapon3(){
+		if (!lostInventory() || (weapon3 != null && weapon3.keptThroughLostInventory())){
+			return weapon3;
+		} else {
+			return null;
+		}
+	}
+
+	public KindOfWeapon weapon4(){
+		if (!lostInventory() || (weapon4 != null && weapon4.keptThroughLostInventory())){
+			return weapon4;
 		} else {
 			return null;
 		}
@@ -164,8 +193,11 @@ public class Belongings implements Iterable<Item> {
 	}
 
 	// ***
-	
-	private static final String WEAPON		= "weapon";
+
+	private static final String WEAPON = "weapon";
+	private static final String WEAPON2		= "weapon2";
+	private static final String WEAPON3		= "weapon3";
+	private static final String WEAPON4		= "weapon4";
 	private static final String ARMOR		= "armor";
 	private static final String ARTIFACT   = "artifact";
 	private static final String MISC       = "misc";
@@ -174,25 +206,37 @@ public class Belongings implements Iterable<Item> {
 	private static final String SECOND_WEP = "second_wep";
 
 	public void storeInBundle( Bundle bundle ) {
-		
+
 		backpack.storeInBundle( bundle );
-		
-		bundle.put( WEAPON, weapon );
+
+		bundle.put(WEAPON, weapon);
+		bundle.put( WEAPON2, weapon2 );
+		bundle.put( WEAPON3, weapon3 );
+		bundle.put( WEAPON4, weapon4 );
 		bundle.put( ARMOR, armor );
 		bundle.put( ARTIFACT, artifact );
 		bundle.put( MISC, misc );
 		bundle.put( RING, ring );
 		bundle.put( SECOND_WEP, secondWep );
 	}
-	
+
 	public void restoreFromBundle( Bundle bundle ) {
-		
+
 		backpack.clear();
 		backpack.restoreFromBundle( bundle );
-		
+
 		weapon = (KindOfWeapon) bundle.get(WEAPON);
 		if (weapon() != null)       weapon().activate(owner);
-		
+
+		weapon2 = (KindOfWeapon) bundle.get(WEAPON2);
+		if (weapon2() != null)      weapon2().activate(owner);
+
+		weapon3 = (KindOfWeapon) bundle.get(WEAPON3);
+		if (weapon3() != null)      weapon3().activate(owner);
+
+		weapon4 = (KindOfWeapon) bundle.get(WEAPON4);
+		if (weapon4() != null)      weapon4().activate(owner);
+
 		armor = (Armor)bundle.get( ARMOR );
 		if (armor() != null)        armor().activate( owner );
 
@@ -208,7 +252,11 @@ public class Belongings implements Iterable<Item> {
 		secondWep = (KindOfWeapon) bundle.get(SECOND_WEP);
 		if (secondWep() != null)    secondWep().activate(owner);
 	}
-	
+
+	public List<KindOfWeapon> getWeapons() {
+		return Arrays.asList(weapon, weapon2, weapon3, weapon4);
+	}
+
 	public static void preview( GamesInProgress.Info info, Bundle bundle ) {
 		if (bundle.contains( ARMOR )){
 			Armor armor = ((Armor)bundle.get( ARMOR ));
@@ -236,7 +284,7 @@ public class Belongings implements Iterable<Item> {
 
 		return result;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public<T extends Item> T getItem( Class<T> itemClass ) {
 
@@ -249,7 +297,7 @@ public class Belongings implements Iterable<Item> {
 				}
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -268,11 +316,11 @@ public class Belongings implements Iterable<Item> {
 
 		return result;
 	}
-	
+
 	public boolean contains( Item contains ){
 
 		boolean lostInvent = lostInventory();
-		
+
 		for (Item item : this) {
 			if (contains == item) {
 				if (!lostInvent || item.keptThroughLostInventory()) {
@@ -280,14 +328,14 @@ public class Belongings implements Iterable<Item> {
 				}
 			}
 		}
-		
+
 		return false;
 	}
-	
+
 	public Item getSimilar( Item similar ){
 
 		boolean lostInvent = lostInventory();
-		
+
 		for (Item item : this) {
 			if (similar != item && similar.isSimilar(item)) {
 				if (!lostInvent || item.keptThroughLostInventory()) {
@@ -295,15 +343,15 @@ public class Belongings implements Iterable<Item> {
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public ArrayList<Item> getAllSimilar( Item similar ){
 		ArrayList<Item> result = new ArrayList<>();
 
 		boolean lostInvent = lostInventory();
-		
+
 		for (Item item : this) {
 			if (item != similar && similar.isSimilar(item)) {
 				if (!lostInvent || item.keptThroughLostInventory()) {
@@ -311,7 +359,7 @@ public class Belongings implements Iterable<Item> {
 				}
 			}
 		}
-		
+
 		return result;
 	}
 
@@ -321,7 +369,7 @@ public class Belongings implements Iterable<Item> {
 			item.identify(false);
 		}
 	}
-	
+
 	public void observe() {
 		if (weapon() != null) {
 			if (ShardOfOblivion.passiveIDDisabled() && weapon() instanceof Weapon){
@@ -329,6 +377,30 @@ public class Belongings implements Iterable<Item> {
 			} else {
 				weapon().identify();
 				Badges.validateItemLevelAquired(weapon());
+			}
+		}
+		if (weapon2() != null) {
+			if (ShardOfOblivion.passiveIDDisabled() && weapon2() instanceof Weapon){
+				((Weapon) weapon2()).setIDReady();
+			} else {
+				weapon2().identify();
+				Badges.validateItemLevelAquired(weapon2());
+				}
+		}
+		if (weapon3() != null) {
+			if (ShardOfOblivion.passiveIDDisabled() && weapon3() instanceof Weapon){
+				((Weapon) weapon3()).setIDReady();
+			} else {
+				weapon3().identify();
+				Badges.validateItemLevelAquired(weapon3());
+			}
+		}
+		if (weapon4() != null) {
+			if (ShardOfOblivion.passiveIDDisabled() && weapon4() instanceof Weapon){
+				((Weapon) weapon4()).setIDReady();
+			} else {
+				weapon4().identify();
+				Badges.validateItemLevelAquired(weapon4());
 			}
 		}
 		if (secondWep() != null){
@@ -378,26 +450,29 @@ public class Belongings implements Iterable<Item> {
 		}
 		Item.updateQuickslot();
 	}
-	
+
 	public void uncurseEquipped() {
-		ScrollOfRemoveCurse.uncurse( owner, armor(), weapon(), artifact(), misc(), ring(), secondWep());
+		ScrollOfRemoveCurse.uncurse(owner,
+				armor(), weapon(), weapon2(), weapon3(), weapon4(), // 新增武器槽
+				artifact(), misc(), ring(), secondWep()
+		);
 	}
-	
+
 	public Item randomUnequipped() {
 		if (owner.buff(LostInventory.class) != null) return null;
 
 		return Random.element( backpack.items );
 	}
-	
+
 	public int charge( float charge ) {
-		
+
 		int count = 0;
-		
+
 		for (Wand.Charger charger : owner.buffs(Wand.Charger.class)){
 			charger.gainCharge(charge);
 			count++;
 		}
-		
+
 		return count;
 	}
 
@@ -405,63 +480,56 @@ public class Belongings implements Iterable<Item> {
 	public Iterator<Item> iterator() {
 		return new ItemIterator();
 	}
-	
+
 	private class ItemIterator implements Iterator<Item> {
 
 		private int index = 0;
-		
+
 		private Iterator<Item> backpackIterator = backpack.iterator();
-		
-		private Item[] equipped = {weapon, armor, artifact, misc, ring, secondWep};
+
+		private Item[] equipped = {weapon, weapon2, weapon3, weapon4, armor, artifact, misc, ring, secondWep};
 		private int backpackIndex = equipped.length;
-		
+
 		@Override
 		public boolean hasNext() {
-			
+
 			for (int i=index; i < backpackIndex; i++) {
 				if (equipped[i] != null) {
 					return true;
 				}
 			}
-			
+
 			return backpackIterator.hasNext();
 		}
 
 		@Override
 		public Item next() {
-			
+
 			while (index < backpackIndex) {
 				Item item = equipped[index++];
 				if (item != null) {
 					return item;
 				}
 			}
-			
+
 			return backpackIterator.next();
 		}
 
 		@Override
 		public void remove() {
-			switch (index) {
-			case 0:
-				equipped[0] = weapon = null;
-				break;
-			case 1:
-				equipped[1] = armor = null;
-				break;
-			case 2:
-				equipped[2] = artifact = null;
-				break;
-			case 3:
-				equipped[3] = misc = null;
-				break;
-			case 4:
-				equipped[4] = ring = null;
-				break;
-			case 5:
-				equipped[5] = secondWep = null;
-				break;
-			default:
+			if (index < backpackIndex) {
+				switch (index - 1) { // 调整索引位置
+					case 0: equipped[0] = weapon = null; break;
+					case 1: equipped[1] = weapon2 = null; break;
+					case 2: equipped[2] = weapon3 = null; break;
+					case 3: equipped[3] = weapon4 = null; break;
+					case 4: equipped[4] = armor = null; break;
+					case 5: equipped[5] = artifact = null; break;
+					case 6: equipped[6] = misc = null; break;
+					case 7: equipped[7] = ring = null; break;
+					case 8: equipped[8] = secondWep = null; break;
+				}
+			} else {
 				backpackIterator.remove();
 			}
 		}

@@ -61,7 +61,7 @@ import java.util.regex.Pattern;
 public class WndHero extends WndTabbed {
 
 	private static final int WIDTH		= 120;
-	private static final int HEIGHT		= 132;
+	private static final int HEIGHT		= 136;
 
 	private StatsTab stats;
 	private TalentsTab talents;
