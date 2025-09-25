@@ -24,30 +24,34 @@ package com.shatteredpixel.shatteredpixeldungeon.scenes;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Chrome;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Gauntlet;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Languages;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Archs;
+import com.shatteredpixel.shatteredpixeldungeon.ui.ChangeSelection;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ExitButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPane;
 import com.shatteredpixel.shatteredpixeldungeon.ui.StyledButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
 import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.ChangeInfo;
 import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.WndChanges;
 import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.WndChangesTabbed;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_1_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_2_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_3_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_4_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_5_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_6_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_7_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_8_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v0_9_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v1_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v2_X_Changes;
-import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.v3_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_1_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_2_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_3_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_4_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_5_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_6_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_7_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_8_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v0_9_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v1_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v2_X_Changes;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd.v3_X_Changes;
 import com.shatteredpixel.shatteredpixeldungeon.windows.IconTitle;
 import com.watabou.noosa.Camera;
 import com.watabou.noosa.Image;
@@ -59,14 +63,14 @@ import com.watabou.noosa.ui.Component;
 import java.util.ArrayList;
 
 public class ChangesScene extends PixelScene {
-	
+
 	public static int changesSelected = 0;
 
 	private NinePatch rightPanel;
 	private ScrollPane rightScroll;
 	private IconTitle changeTitle;
 	private RenderedTextBlock changeBody;
-	
+
 	@Override
 	public void create() {
 		super.create();
@@ -79,10 +83,10 @@ public class ChangesScene extends PixelScene {
 		int w = Camera.main.width;
 		int h = Camera.main.height;
 
-		IconTitle title = new IconTitle(Icons.CHANGES.get(), Messages.get(this, "title"));
-		title.setSize(200, 0);
+		RenderedTextBlock title = PixelScene.renderTextBlock( Messages.get(this, "title"), 9 );
+		title.hardlight(Window.TITLE_COLOR);
 		title.setPos(
-				(w - title.reqWidth()) / 2f,
+				(w - title.width()) / 2f,
 				(20 - title.height()) / 2f
 		);
 		align(title);
@@ -97,15 +101,15 @@ public class ChangesScene extends PixelScene {
 		int pw = 135 + panel.marginLeft() + panel.marginRight() - 2;
 		int ph = h - 36;
 
-		if (h >= PixelScene.MIN_HEIGHT_FULL && w >= 300) {
+		if (h >= PixelScene.MIN_HEIGHT_FULL && w >= PixelScene.MIN_WIDTH_FULL) {
 			panel.size( pw, ph );
 			panel.x = (w - pw) / 2f - pw/2 - 1;
-			panel.y = 20;
+			panel.y = title.bottom() + 5;
 
 			rightPanel = Chrome.get(Chrome.Type.TOAST);
 			rightPanel.size( pw, ph );
 			rightPanel.x = (w - pw) / 2f + pw/2 + 1;
-			rightPanel.y = 20;
+			rightPanel.y = title.bottom() + 5;
 			add(rightPanel);
 
 			rightScroll = new ScrollPane(new Component());
@@ -132,11 +136,11 @@ public class ChangesScene extends PixelScene {
 		} else {
 			panel.size( pw, ph );
 			panel.x = (w - pw) / 2f;
-			panel.y = 20;
+			panel.y = title.bottom() + 5;
 		}
 		align( panel );
 		add( panel );
-		
+
 		final ArrayList<ChangeInfo> changeInfos = new ArrayList<>();
 
 		if (Messages.lang() != Languages.ENGLISH){
@@ -144,7 +148,7 @@ public class ChangesScene extends PixelScene {
 			langWarn.hardlight(CharSprite.WARNING);
 			changeInfos.add(langWarn);
 		}
-		
+
 		switch (changesSelected){
 			case 0: default:
 				v3_X_Changes.addAllChanges(changeInfos);
@@ -196,6 +200,24 @@ public class ChangesScene extends PixelScene {
 		float posY = 0;
 		float nextPosY = 0;
 		boolean second = false;
+
+		if (changesSelected == 0) {
+			ChangeSelection selection1 = new ChangeSelection("GreedyPD", Messages.get(this, "grpd")) {
+				@Override
+				public void onClick() {
+					NewChangesScene.changesSelected = 0;
+					ShatteredPixelDungeon.switchNoFade(NewChangesScene.class);
+				}
+			};
+			selection1.icon(new Image(new ItemSprite(new Gauntlet())));
+			selection1.hardlight(Window.TITLE_COLOR);
+			selection1.setRect(0, posY, panel.innerWidth(), 0);
+			content.add(selection1);
+			posY = nextPosY = selection1.bottom();
+		}
+
+
+
 		for (ChangeInfo info : changeInfos){
 			if (info.major) {
 				posY = nextPosY;
@@ -242,7 +264,9 @@ public class ChangesScene extends PixelScene {
 		btn3_X.setRect(list.left()-4f, list.bottom(), 19, changesSelected == 0 ? 19 : 15);
 		addToBack(btn3_X);
 
+
 		StyledButton btn2_X = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "2.X", 8){
+
 			@Override
 			protected void onClick() {
 				super.onClick();
@@ -297,7 +321,7 @@ public class ChangesScene extends PixelScene {
 		if (changesSelected != 4) btn0_8.textColor( 0xBBBBBB );
 		btn0_8.setRect(btn0_9.right()-2, list.bottom(), 19, changesSelected == 4 ? 19 : 15);
 		addToBack(btn0_8);
-		
+
 		StyledButton btn0_7 = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "0.7", 8){
 			@Override
 			protected void onClick() {
@@ -311,7 +335,7 @@ public class ChangesScene extends PixelScene {
 		if (changesSelected != 5) btn0_7.textColor( 0xBBBBBB );
 		btn0_7.setRect(btn0_8.right()-2, btn0_8.top(), 19, changesSelected == 5 ? 19 : 15);
 		addToBack(btn0_7);
-		
+
 		StyledButton btn0_6 = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "0.6", 8){
 			@Override
 			protected void onClick() {
@@ -325,7 +349,7 @@ public class ChangesScene extends PixelScene {
 		if (changesSelected != 6) btn0_6.textColor( 0xBBBBBB );
 		btn0_6.setRect(btn0_7.right()-2, btn0_8.top(), 19, changesSelected == 6 ? 19 : 15);
 		addToBack(btn0_6);
-		
+
 		StyledButton btnOld = new StyledButton(Chrome.Type.GREY_BUTTON_TR, "0.5-", 8){
 			@Override
 			protected void onClick() {
@@ -386,7 +410,7 @@ public class ChangesScene extends PixelScene {
 			s.addToFront(new WndChangesTabbed(icon, title, messages));
 		}
 	}
-	
+
 	@Override
 	protected void onBackPressed() {
 		ShatteredPixelDungeon.switchNoFade(TitleScene.class);

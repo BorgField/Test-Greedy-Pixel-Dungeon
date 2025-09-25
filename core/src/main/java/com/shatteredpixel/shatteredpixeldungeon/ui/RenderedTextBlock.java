@@ -177,7 +177,7 @@ public class RenderedTextBlock extends Component {
 			Ⅵ = 黑色
 			Ⅶ = 青色 */
 
-			if (str.equals("_") && highlightingEnabled){
+			if ((str.equals("_") || str.equals("**")) && highlightingEnabled){
 				highlighting = !highlighting;
 			} else if(str.equals("Ⅰ") && RedEnabled){
 				Redhighlighting = !Redhighlighting;

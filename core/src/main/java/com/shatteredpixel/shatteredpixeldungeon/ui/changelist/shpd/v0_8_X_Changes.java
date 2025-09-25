@@ -19,7 +19,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.ui.changelist;
+package com.shatteredpixel.shatteredpixeldungeon.ui.changelist.shpd;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DM300;
@@ -58,6 +58,8 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIcon;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.ChangeButton;
+import com.shatteredpixel.shatteredpixeldungeon.ui.changelist.ChangeInfo;
 import com.watabou.noosa.Image;
 import com.watabou.utils.DeviceCompat;
 
