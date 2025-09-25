@@ -3,32 +3,32 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.WheelChair;
 import com.watabou.utils.QuietCallable;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class MultiWielding {
+    private final Hero hero;
     private final QuietCallable<KindOfWeapon> weapon, weapon2, weapon3, weapon4;
     private int currentAttackIndex = 0; // 当前攻击武器索引
-    private static final KindOfWeapon[] weapons = new KindOfWeapon[4]; // 武器数组
+    private final KindOfWeapon[] weapons = new KindOfWeapon[4]; // 武器数组
     private final boolean[] canAttack = new boolean[4]; // 每把武器是否可攻击
-    private boolean hasBracelet; // 是否有手镯
 
     public MultiWielding(
+            Hero hero, // 添加 Hero 参数
             QuietCallable<KindOfWeapon> weapon,
             QuietCallable<KindOfWeapon> weapon2,
             QuietCallable<KindOfWeapon> weapon3,
             QuietCallable<KindOfWeapon> weapon4
     ) {
+        this.hero = hero; // 初始化 Hero 引用
         this.weapon = weapon;
         this.weapon2 = weapon2;
         this.weapon3 = weapon3;
         this.weapon4 = weapon4;
-
         // 初始化武器数组
         weapons[0] = weapon.call();
         weapons[1] = weapon2.call();
@@ -41,44 +41,26 @@ public class MultiWielding {
         return weapons[currentAttackIndex];
     }
 
+    // 切换到下一把武器
     public void nextWeapon() {
         int startIndex = currentAttackIndex;
         do {
             currentAttackIndex = (currentAttackIndex + 1) % 4;
+            // 跳过空槽位
         } while (weapons[currentAttackIndex] == null && currentAttackIndex != startIndex);
     }
 
-    // 新增方法：直接切换到指定武器（用于外部调用）
-    public void switchToNextWeapon() {
-        nextWeapon();
-    }
-
-    // 新增方法：获取当前武器索引（调试用）
-    public int getCurrentIndex() {
-        return currentAttackIndex;
-    }
-
-    // 武器攻击音效
-//    public static void weaponHitSound(float pitch) {
+//    // 武器攻击音效
+//    public void weaponHitSound(float pitch) {
 //        KindOfWeapon current = currentWeapon();
 //        if (current != null) {
-//            float volume = weaponNotNull() ? 0.7f : 1.0f;
-//            current.hitSound(volume, pitch);
+//            current.hitSound(pitch);
 //        }
-//    }
-//
-//
-//    // 检查是否有武器存在
-//    public static boolean weaponNotNull() {
-//        for (KindOfWeapon wep : weapons) {
-//            if (wep != null) return true;
-//        }
-//        return false;
 //    }
 
     // 检查武器是否可攻击
     public boolean weaponCanAttack(Char owner, Char enemy) {
-        if (enemy == null || owner.pos == enemy.pos || !Actor.chars().contains(enemy)) {
+        if (enemy == null || !Actor.chars().contains(enemy)) {
             Arrays.fill(canAttack, false);
             return false;
         }
@@ -86,10 +68,8 @@ public class MultiWielding {
         for (int i = 0; i < 4; i++) {
             KindOfWeapon wep = weapons[i];
             boolean reachable = wep != null && wep.canReach(owner, enemy.pos);
-
-            // 第3和第4把武器需要手镯
-            if (i >= 2 && wep != null) {
-                canAttack[i] = hasBracelet && reachable;
+            if (i >= 2 && wep != null) { // weapon3 and weapon4
+                canAttack[i] = reachable;
             } else {
                 canAttack[i] = reachable;
             }
@@ -100,80 +80,64 @@ public class MultiWielding {
     // 武器伤害计算
     public int weaponDamageRoll(Char owner) {
         KindOfWeapon wep = currentWeapon();
-        if (wep == null) return 0;
-
-        // 远程武器直接使用其伤害计算
-        if (wep instanceof MissileWeapon || wep instanceof SpiritBow) {
-            return wep.damageRoll(owner);
-        }
-
-        return wep.damageRoll(owner);
+        return wep != null ? wep.damageRoll(owner) : 0;
     }
 
     // 武器特效处理
     public int weaponProc(Char attacker, Char defender, int damage) {
         KindOfWeapon wep = currentWeapon();
-        if (wep == null) return damage;
-
-        // 远程武器直接使用其特效处理
-        if (wep instanceof MissileWeapon || wep instanceof SpiritBow) {
-            return wep.proc(attacker, defender, damage);
-        }
-
-        return wep.proc(attacker, defender, damage);
+        return wep != null ? wep.proc(attacker, defender, damage) : damage;
     }
 
-    // 武器防御因子计算
-    public int weaponDefenseFactor(Char owner) {
-        int defenceFactor = 0;
-        for (KindOfWeapon wep : weapons) {
-            if (wep != null) {
-                defenceFactor += wep.defenseFactor(owner);
+
+    public boolean isAttack(Char enemy, float dmgMulti, float dmgBonus, float accMulti) {
+        // 获取所有武器列表（排除临时武器和能力武器）
+        List<KindOfWeapon> weapons = new ArrayList<>();
+        if (hero.belongings.weapon != null && hero.belongings.thrownWeapon == null && hero.belongings.abilityWeapon == null)
+            weapons.add(hero.belongings.weapon);
+        if (hero.belongings.weapon2 != null && hero.belongings.thrownWeapon == null && hero.belongings.abilityWeapon == null)
+            weapons.add(hero.belongings.weapon2);
+        if (hero.belongings.weapon3 != null && hero.belongings.thrownWeapon == null && hero.belongings.abilityWeapon == null)
+            weapons.add(hero.belongings.weapon3);
+        if (hero.belongings.weapon4 != null && hero.belongings.thrownWeapon == null && hero.belongings.abilityWeapon == null)
+            weapons.add(hero.belongings.weapon4);
+
+        // 过滤掉不能攻击到敌人的武器
+        List<KindOfWeapon> availableWeapons = new ArrayList<>();
+        for (KindOfWeapon w : weapons) {
+            if (w.canReach(hero, enemy.pos)) {
+                availableWeapons.add(w);
             }
         }
-        return defenceFactor;
-    }
 
-    // 武器准确度因子计算
-//    public float weaponAccuracyFactor(Char owner) {
-//        KindOfWeapon wep = currentWeapon();
-//        if (wep == null) return 0;
-//
-//        // 远程武器直接使用其准确度
-//        if (wep instanceof MissileWeapon || wep instanceof SpiritBow) {
-//            return wep.accuracyFactor(owner);
-//        }
-//
-//        return wep.accuracyFactor(owner);
-//    }
-
-    // 武器攻击延迟因子计算
-    public float weaponDelayFactor(Char owner) {
-        KindOfWeapon wep = currentWeapon();
-        if (wep == null) return 0;
-
-        // 远程武器直接使用其延迟因子
-        if (wep instanceof MissileWeapon || wep instanceof SpiritBow) {
-            return wep.delayFactor(owner);
+        if (availableWeapons.isEmpty()) {
+            return false;
         }
 
-        return wep.delayFactor(owner);
-    }
-
-    // 设置手镯状态
-    public void setHasBracelet(boolean hasBracelet) {
-        this.hasBracelet = hasBracelet;
-    }
-
-    // 获取当前武器索引
-    public int getCurrentAttackIndex() {
-        return currentAttackIndex;
-    }
-
-    // 设置当前武器索引
-    public void setCurrentAttackIndex(int index) {
-        if (index >= 0 && index < 4 && weapons[index] != null) {
-            currentAttackIndex = index;
+        // 计算总延迟
+        float totalDelay = 0f;
+        for (KindOfWeapon w : availableWeapons) {
+            totalDelay += w.delayFactor(hero);
         }
+        float averageDelay = totalDelay / availableWeapons.size();
+
+        boolean anyHit = false;
+        KindOfWeapon originalAbilityWeapon = hero.belongings.abilityWeapon;
+        for (int i = 0; i < availableWeapons.size(); i++) {
+            KindOfWeapon currentWeapon = availableWeapons.get(i);
+            float attackDmgBonus = (i == 0) ? dmgBonus : 0f; // 只有第一次攻击享受全额dmgBonus
+            hero.belongings.abilityWeapon = currentWeapon;
+            boolean hit = hero.attack(enemy, dmgMulti, attackDmgBonus, accMulti);
+            anyHit = anyHit || hit;
+            if (!enemy.isAlive()) {
+                break; // 如果敌人死亡，停止后续攻击
+            }
+        }
+        hero.belongings.abilityWeapon = originalAbilityWeapon;
+
+        // 设置平均延迟
+        hero.spend(averageDelay);
+
+        return anyHit;
     }
 }

@@ -36,7 +36,6 @@ import java.util.ArrayList;
 
 public class WheelChair extends Artifact {
     public static final String AC_JUMP       = "JUMP";
-    private boolean isBracelet = false;
 
     {
         image = ItemSpriteSheet.ROUND_SHIELD;
@@ -192,11 +191,6 @@ public class WheelChair extends Artifact {
         }
         return desc;
     }
-
-    public boolean isBracelet() {
-        return isBracelet;
-    }
-
     private boolean movedLastTurn = true;
 
     public class wheelRecharge extends Artifact.ArtifactBuff {
