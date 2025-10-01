@@ -116,7 +116,8 @@ public class TendonHookSickle extends MeleeWeapon {
     private void applyEquipDamage(Hero hero) {
         int damage = (int) (hero.HP * 0.33f);
         if (damage < 1) { damage = 1;}
-        hero.damage(damage, this);
+        Bleeding bleeding = new Bleeding();
+        hero.damage(damage, bleeding);
     }
 
     public int damageRoll(int lvl) {
@@ -182,7 +183,8 @@ public class TendonHookSickle extends MeleeWeapon {
                 // 确保至少造成1点伤害
                 if (extraDmg < 1) extraDmg = 1;
                 // 对defender施加额外伤害
-                defender.damage( extraDmg, Bleeding.class);
+                Bleeding bleeding = new Bleeding();
+                defender.damage( extraDmg, bleeding);
                 // 添加视觉效果
                 if (defender.sprite.visible) {
                     Splash.at(defender.sprite.center(), PointF.PI, PointF.PI / 4,
@@ -426,7 +428,8 @@ public class TendonHookSickle extends MeleeWeapon {
                     if (getEnergy() <= -50) {
                         active = false;
                         int damage = target.HP / 2;
-                        target.damage(damage, this);
+                        Bleeding bleeding = new Bleeding();
+                        target.damage(damage, bleeding);
                         GLog.w(Messages.get(this, "energy_depleted"));
                         Buff.affect(target, PredatorCooldown.class, 150f);
                         detach();

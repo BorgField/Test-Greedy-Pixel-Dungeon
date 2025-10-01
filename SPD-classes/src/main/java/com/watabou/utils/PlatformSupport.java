@@ -41,6 +41,8 @@ public abstract class PlatformSupport {
 
 	public abstract boolean supportsVibration();
 
+	protected static FreeTypeFontGenerator fallbackFontGenerator;
+
 	public void vibrate( int millis ){
 		if (ControllerHandler.isControllerConnected()) {
 			ControllerHandler.vibrate(millis);

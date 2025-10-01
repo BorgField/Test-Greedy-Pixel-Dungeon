@@ -254,6 +254,20 @@ public class AndroidPlatformSupport extends PlatformSupport {
 			if (JPFontGenerator == null) JPFontGenerator = fallbackGenerator;
 			
 		}
+		if (!systemfont) {
+			switch (SPDSettings.language()) {
+				case CHINESE:
+					fallbackFontGenerator = SCFontGenerator;
+					break;
+			}
+			KRFontGenerator = SCFontGenerator = JPFontGenerator = new FreeTypeFontGenerator(Gdx.files.internal("fonts/fusion_pixel.ttf"));
+		} else {
+			switch (SPDSettings.language()) {
+				case CHINESE:
+					fallbackFontGenerator = SCFontGenerator;
+					break;
+			}
+		}
 		
 		if (basicFontGenerator != null) fonts.put(basicFontGenerator, new HashMap<>());
 		if (KRFontGenerator != null) fonts.put(KRFontGenerator, new HashMap<>());
