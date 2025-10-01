@@ -300,7 +300,7 @@ public class Hero extends Char {
 			}
 		}
 
-		if( buff(PotionOfBurst.Burst.class)!= null){
+		if( buff(PotionOfBurst.BurstMini.class)!= null){
 			strBonus += 10;
 		}
 

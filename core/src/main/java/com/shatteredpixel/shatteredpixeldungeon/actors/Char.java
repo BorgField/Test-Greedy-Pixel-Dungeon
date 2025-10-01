@@ -512,7 +512,7 @@ public abstract class Char extends Actor {
 				dmg *= 0.67f;
 			}
 
-			if (Dungeon.hero.buff(PotionOfBurst.Burst.class) != null){
+			if (Dungeon.hero.buff(PotionOfBurst.BurstMini.class) != null){
 				dmg *= 1.3f;
 			}
 
@@ -769,7 +769,7 @@ public abstract class Char extends Actor {
 			damage = armor.absorb( damage );
 		}
 
-		PotionOfBurning.Burning potion = buff( PotionOfBurning.Burning.class );
+		PotionOfBurning.BurningMini potion = buff( PotionOfBurning.BurningMini.class );
 		if (potion != null) {
 			int a =potion.getLvl();
 			int b = potion.getCount();

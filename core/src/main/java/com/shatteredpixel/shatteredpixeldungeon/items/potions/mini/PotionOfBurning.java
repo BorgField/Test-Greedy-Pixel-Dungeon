@@ -7,7 +7,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Fire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.FlameParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAggression;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -18,7 +17,6 @@ import com.watabou.noosa.Image;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
-import com.watabou.utils.PointF;
 
 public class PotionOfBurning extends MiniPotion {
     //炎蚀试剂
@@ -37,7 +35,7 @@ public class PotionOfBurning extends MiniPotion {
             if (Char.hasProp(ch, Char.Property.BOSS) || Char.hasProp(ch, Char.Property.MINIBOSS)) {
                 Buff.prolong(ch, StoneOfAggression.Aggression.class, StoneOfAggression.Aggression.DURATION / 4f);
             } else {
-                Buff.affect(ch, Burning.class).setCount(1);
+                Buff.affect(ch, BurningMini.class).setCount(1);
             }
             ch.sprite.emitter().burst( FlameParticle.FACTORY, 5 );
         }
@@ -47,7 +45,7 @@ public class PotionOfBurning extends MiniPotion {
 
 
 
-    public static class Burning extends Buff {
+    public static class BurningMini extends Buff {
         {
             type = buffType.NEGATIVE;
             announced = true;

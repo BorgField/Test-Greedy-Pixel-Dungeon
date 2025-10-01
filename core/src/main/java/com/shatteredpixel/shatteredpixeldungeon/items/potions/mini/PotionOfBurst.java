@@ -1,20 +1,13 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.potions.mini;
 
 import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
-import static com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurst.Burst.DURATION;
+import static com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurst.BurstMini.DURATION;
 
-import com.shatteredpixel.shatteredpixeldungeon.Challenges;
-import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Barrier;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Weakness;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
-import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.noosa.Image;
@@ -29,10 +22,10 @@ public class PotionOfBurst extends MiniPotion {
     @Override
     public void apply(Hero hero) {
         identify();
-        Buff.prolong(hero, Burst.class, DURATION);
+        Buff.prolong(hero, BurstMini.class, DURATION);
     }
 
-    public static class Burst extends FlavourBuff {
+    public static class BurstMini extends FlavourBuff {
         {
             type = buffType.POSITIVE;
             announced = true;
