@@ -51,6 +51,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfIc
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfMight;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfToxicEssence;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.ExoticPotion;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.MiniPotion;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ExoticScroll;
 import com.shatteredpixel.shatteredpixeldungeon.items.spells.Alchemize;
@@ -391,6 +392,14 @@ public class QuickRecipe extends Component {
 				result.add(new QuickRecipe(new ReclaimTrap.Recipe()));
 				result.add(new QuickRecipe(new SummonElemental.Recipe()));
 				result.add(new QuickRecipe(new BeaconOfReturning.Recipe()));
+				return result;
+			case 9:
+				r = new MiniPotion.PotionToMini();
+				for (Class<?> cls : Generator.Category.POTION.classes){
+					Potion pot = (Potion) Reflection.newInstance(cls);
+					ArrayList<Item> in = new ArrayList<>(Arrays.asList(pot));
+					result.add(new QuickRecipe( r, in, r.sampleOutput(in)));
+				}
 				return result;
 		}
 	}

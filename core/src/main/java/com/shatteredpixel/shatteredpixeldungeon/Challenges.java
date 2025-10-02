@@ -40,6 +40,7 @@ public class Challenges {
 	public static final int NO_SCROLLS         = 1<<8;   // 索引8
 
 	public static final int TEST_MODE          = 1<<10;   // 索引10
+	public static final int MINI_POTIONS   	   = 1<<11;
 
 	public static final int MAX_VALUE          = (1<<19)-1;
 
@@ -57,7 +58,8 @@ public class Challenges {
 			"darkness",                // 7
 			"no_scrolls",              // 8
 
-			"test_mode"                // 10
+			"test_mode",               // 10
+			"mini_potions"             // 11
 	};
 
 	public static final long[] MASKS = {
@@ -71,7 +73,8 @@ public class Challenges {
 			DARKNESS,
 			NO_SCROLLS,
 
-			TEST_MODE
+			TEST_MODE,
+			MINI_POTIONS
 	};
 
 	public static boolean isItemBlocked( Item item ){

@@ -84,6 +84,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfIc
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfMight;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfToxicEssence;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.ExoticPotion;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.MiniPotion;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.CeremonialCandle;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.CorpseDust;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.DarkGold;
@@ -148,7 +149,8 @@ public enum Catalog {
 	TIPPED_DARTS,
 	BREWS_ELIXIRS,
 	SPELLS,
-	MISC_CONSUMABLES;
+	MISC_CONSUMABLES,
+	MINI_POTIONS;
 
 	//tracks whether an item has been collected while identified
 	private final LinkedHashMap<Class<?>, Boolean> seen = new LinkedHashMap<>();
@@ -260,6 +262,8 @@ public enum Catalog {
 				LiquidMetal.class, ArcaneResin.class,
 				SealShard.class, BrokenStaff.class, CloakScrap.class, BowFragment.class, BrokenHilt.class, TornPage.class);
 
+		MINI_POTIONS.addItems(MiniPotion.regToMini.keySet().toArray(new Class[0]));
+
 	}
 
 	//old badges for pre-2.5
@@ -302,6 +306,7 @@ public enum Catalog {
 		consumableCatalogs.add(BREWS_ELIXIRS);
 		consumableCatalogs.add(SPELLS);
 		consumableCatalogs.add(MISC_CONSUMABLES);
+		consumableCatalogs.add(MINI_POTIONS);
 	}
 	
 	public static boolean isSeen(Class<?> cls){

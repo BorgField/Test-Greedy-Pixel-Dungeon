@@ -1,5 +1,8 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.potions.mini;
 
+import static com.shatteredpixel.shatteredpixeldungeon.Challenges.MINI_POTIONS;
+
+import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.Recipe;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
@@ -114,7 +117,9 @@ public class MiniPotion extends Potion {
 
         @Override
         public boolean testIngredients(ArrayList<Item> ingredients) {
-            if (ingredients.size() == 1 && regToMini.containsKey(ingredients.get(0).getClass())){
+            if (Dungeon.isChallenged(MINI_POTIONS)&&
+                    ingredients.size() == 1 &&
+                    regToMini.containsKey(ingredients.get(0).getClass())){
                 return true;
             }
 
