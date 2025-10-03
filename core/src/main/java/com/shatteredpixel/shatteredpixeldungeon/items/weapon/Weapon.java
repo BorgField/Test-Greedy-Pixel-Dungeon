@@ -38,6 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.Smite;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfSwift;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfArcana;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfFuror;
@@ -307,6 +308,10 @@ abstract public class Weapon extends KindOfWeapon {
 
 		if (owner.buff(Scimitar.SwordDance.class) != null){
 			multi += 0.6f;
+		}
+
+		if (owner.buff(PotionOfSwift.SwiftMini.class) != null){
+			multi += 0.25f;
 		}
 
 		return multi;

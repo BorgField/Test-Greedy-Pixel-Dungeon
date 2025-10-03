@@ -12,13 +12,12 @@ public class PotionOfSwift extends MiniPotion {
     //迅捷试剂
     {
         icon = ItemSpriteSheet.Icons.POTION_SWIFT;
-
     }
 
     @Override
     public void apply(Hero hero) {
         identify();
-        Buff.prolong(hero, PotionOfSwift.SwiftMini.class, 20f);
+        Buff.prolong(hero, PotionOfSwift.SwiftMini.class, 10f);
     }
 
     public static class SwiftMini extends FlavourBuff {
@@ -27,12 +26,12 @@ public class PotionOfSwift extends MiniPotion {
             announced = true;
         }
 
-        public static final float DURATION	= 20f;
+        public static final float DURATION	= 10f;
         @Override
         public int icon() { return BuffIndicator.MINIPOTION; }
 
         @Override
-        public void tintIcon(Image icon) { icon.hardlight(0.560f, 0.194f, 0.968f); }
+        public void tintIcon(Image icon) { icon.hardlight(0f, 0.85f, 0.5f); }
 
         @Override
         public float iconFadePercent() { return Math.max(0, (DURATION - visualcooldown()) / DURATION); }

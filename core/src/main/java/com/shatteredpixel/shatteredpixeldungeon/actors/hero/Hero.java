@@ -123,6 +123,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.elixirs.ElixirOfMight;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfDivineInspiration;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurst;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfSwift;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.DarkGold;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.Pickaxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfAccuracy;
@@ -798,6 +799,10 @@ public class Hero extends Char {
 			//ditto for furor + sword dance!
 			if (buff(Scimitar.SwordDance.class) != null){
 				speed += 0.6f;
+			}
+
+			if (buff(PotionOfSwift.SwiftMini.class) != null){
+				speed += 0.25f;
 			}
 
 			//and augments + brawler's stance! My goodness, so many options now compared to 2014!
