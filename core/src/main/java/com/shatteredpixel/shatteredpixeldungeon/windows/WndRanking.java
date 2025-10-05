@@ -48,6 +48,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.ItemSlot;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RedButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.RenderedTextBlock;
+import com.shatteredpixel.shatteredpixeldungeon.ui.ScrollPane;
 import com.shatteredpixel.shatteredpixeldungeon.ui.TalentButton;
 import com.shatteredpixel.shatteredpixeldungeon.ui.TalentsPane;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Window;
@@ -61,6 +62,7 @@ import com.watabou.noosa.ui.Component;
 import com.watabou.utils.DeviceCompat;
 
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class WndRanking extends WndTabbed {
@@ -337,75 +339,119 @@ public class WndRanking extends WndTabbed {
 	}
 
 	private class ItemsTab extends Group {
-		
 		private float pos;
-		
+		private final ScrollPane list;
+		private final ArrayList<ItemButton> itemButtons = new ArrayList<>();
+		private final ArrayList<QuickSlotButton> quickSlotButtons = new ArrayList<>();
+		private int exHeight = 0;
+
 		public ItemsTab() {
 			super();
-			
+
+			camera = WndRanking.this.camera;
+			list = new ScrollPane(new Component());
+			add(list);
+
+			updateList();
+		}
+
+		private void updateList() {
+			// 清除旧的按钮
+			clearButtons();
+
 			Belongings stuff = Dungeon.hero.belongings;
-			if (stuff.weapon != null) {
-				addItem( stuff.weapon );
-			}
-			if (stuff.armor != null) {
-				addItem( stuff.armor );
-			}
-			if (stuff.artifact != null) {
-				addItem( stuff.artifact );
-			}
-			if (stuff.misc != null) {
-				addItem( stuff.misc );
-			}
-			if (stuff.ring != null) {
-				addItem( stuff.ring );
-			}
+			exHeight = (stuff.weapon3 != null || stuff.weapon4 != null) ? 42 : 0;
 
-			pos = 0;
+			// 设置滚动面板
+			list.content().clear();
+			list.content().setSize(WIDTH, HEIGHT + 28 + exHeight);
+			list.setRect(0, 0, WIDTH, HEIGHT);
 
-			int slotsActive = 0;
-			for (int i = 0; i < QuickSlot.SIZE; i++){
-				if (Dungeon.quickslot.isNonePlaceholder(i)){
-					slotsActive++;
-				}
+			// 添加装备物品
+			addEquipmentItems();
+
+			// 添加分隔线
+			addSeparator();
+
+			// 添加快捷栏按钮
+			addQuickSlotButtons();
+		}
+
+		private void clearButtons() {
+			// 清除物品按钮
+			for (ItemButton button : itemButtons) {
+				list.content().remove(button);
 			}
+			itemButtons.clear();
 
-			Trinket trinket = stuff.getItem(Trinket.class);
-			if (trinket != null){
-				slotsActive++;
+			// 清除快捷栏按钮
+			for (QuickSlotButton button : quickSlotButtons) {
+				list.content().remove(button);
 			}
+			quickSlotButtons.clear();
+		}
 
-			float slotWidth = Math.min(28, ((WIDTH - slotsActive + 1) / (float)slotsActive));
+		private void addEquipmentItems() {
+			Belongings stuff = Dungeon.hero.belongings;
+			addItemIfNotNull(stuff.weapon);
+			addItemIfNotNull(stuff.weapon2);
+			addItemIfNotNull(stuff.armor);
+			addItemIfNotNull(stuff.artifact);
+			addItemIfNotNull(stuff.misc);
+			addItemIfNotNull(stuff.ring);
+			addItemIfNotNull(stuff.weapon3);
+			addItemIfNotNull(stuff.weapon4);
+		}
 
-			for (int i = -1; i < QuickSlot.SIZE; i++){
-				Item item = null;
-				if (i == -1){
-					item = trinket;
-				} else if (Dungeon.quickslot.isNonePlaceholder(i)) {
-					item = Dungeon.quickslot.getItem(i);
-				}
-				if (item != null){
+		private void addItemIfNotNull(Item item) {
+			if (item != null) {
+				addItem(item);
+			}
+		}
+
+		private void addSeparator() {
+			ColorBlock sep = new ColorBlock(1, 1, 0xFF000000);
+			sep.size(WIDTH, 1);
+			sep.y = 127 + exHeight;
+			list.content().add(sep);
+		}
+
+		private void addQuickSlotButtons() {
+			float pos = 0;
+			float slotWidth = (WIDTH - 5) / 6f;
+
+			// 添加第一行快捷栏按钮
+			addQuickSlotRow(0, 6, 130 + exHeight, pos, slotWidth);
+
+			// 添加第二行快捷栏按钮
+			addQuickSlotRow(6, QuickSlot.SIZE, 151 + exHeight, 0, slotWidth);
+		}
+
+		private void addQuickSlotRow(int start, int end, float y, float startPos, float slotWidth) {
+			float pos = startPos;
+			for (int i = start; i < end; i++) {
+				Item item = Dungeon.quickslot.getItem(i);
+				if (item != null) {
 					QuickSlotButton slot = new QuickSlotButton(item);
-
-					slot.setRect( pos, 120, slotWidth, 23 );
+					slot.setRect(pos, y, slotWidth, 20);
 					PixelScene.align(slot);
-
-					add(slot);
-
+					list.content().add(slot);
+					quickSlotButtons.add(slot);
 					pos += slotWidth + 1;
-
 				}
 			}
 		}
-		
-		private void addItem( Item item ) {
-			ItemButton slot = new ItemButton( item );
-			slot.setRect( 0, pos, width, ItemButton.HEIGHT );
-			add( slot );
-			
+
+		private void addItem(Item item) {
+			ItemButton slot = new ItemButton(item);
+			slot.setRect(0, pos, WIDTH, 20);
+			list.content().add(slot);
+			itemButtons.add(slot);
 			pos += slot.height() + 1;
 		}
 	}
-	
+
+
 	private class BadgesTab extends Group {
 		
 		public BadgesTab() {
@@ -467,8 +513,9 @@ public class WndRanking extends WndTabbed {
 	}
 
 	private class ItemButton extends Button {
-		
-		public static final int HEIGHT	= 23;
+
+		public static final int WIDTH   = 20;
+		public static final int HEIGHT	= 20;
 		
 		private Item item;
 		
@@ -501,7 +548,7 @@ public class WndRanking extends WndTabbed {
 		@Override
 		protected void createChildren() {
 			
-			bg = new ColorBlock( 28, HEIGHT, 0x9953564D );
+			bg = new ColorBlock( 20, HEIGHT, 0x9953564D );
 			add( bg );
 			
 			slot = new ItemSlot();
@@ -518,7 +565,7 @@ public class WndRanking extends WndTabbed {
 			bg.x = x;
 			bg.y = y;
 			
-			slot.setRect( x, y, 28, HEIGHT );
+			slot.setRect( x, y, WIDTH, HEIGHT );
 			PixelScene.align(slot);
 			
 			name.maxWidth((int)(width - slot.width() - 2));

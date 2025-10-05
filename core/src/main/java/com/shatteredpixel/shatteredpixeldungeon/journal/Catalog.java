@@ -238,6 +238,8 @@ public enum Catalog {
 
 		EXOTIC_POTIONS.addItems(ExoticPotion.exoToReg.keySet().toArray(new Class[0]));
 
+		MINI_POTIONS.addItems(MiniPotion.regToMini.keySet().toArray(new Class[0]));
+
 		EXOTIC_SCROLLS.addItems(ExoticScroll.exoToReg.keySet().toArray(new Class[0]));
 
 		BOMBS.addItems( Bomb.class, FrostBomb.class, Firebomb.class, SmokeBomb.class, RegrowthBomb.class,
@@ -261,8 +263,6 @@ public enum Catalog {
 				GooBlob.class, TengusMask.class, MetalShard.class, KingsCrown.class,
 				LiquidMetal.class, ArcaneResin.class,
 				SealShard.class, BrokenStaff.class, CloakScrap.class, BowFragment.class, BrokenHilt.class, TornPage.class);
-
-		MINI_POTIONS.addItems(MiniPotion.regToMini.keySet().toArray(new Class[0]));
 
 	}
 
@@ -300,13 +300,13 @@ public enum Catalog {
 		consumableCatalogs.add(STONES);
 		consumableCatalogs.add(FOOD);
 		consumableCatalogs.add(EXOTIC_POTIONS);
+		consumableCatalogs.add(MINI_POTIONS);
 		consumableCatalogs.add(EXOTIC_SCROLLS);
 		consumableCatalogs.add(BOMBS);
 		consumableCatalogs.add(TIPPED_DARTS);
 		consumableCatalogs.add(BREWS_ELIXIRS);
 		consumableCatalogs.add(SPELLS);
 		consumableCatalogs.add(MISC_CONSUMABLES);
-		consumableCatalogs.add(MINI_POTIONS);
 	}
 	
 	public static boolean isSeen(Class<?> cls){
