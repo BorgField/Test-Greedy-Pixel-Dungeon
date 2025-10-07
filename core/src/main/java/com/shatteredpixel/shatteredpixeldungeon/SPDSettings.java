@@ -60,6 +60,8 @@ public class SPDSettings extends GameSettings {
 	private static final String KEY_DARK	= "dark_ui";
 	private static final String KEY_ItemsUI	= "items_ui";
 
+	private static final String KEY_StatsUI	= "stats_ui";
+
 	
 	public static void fullscreen( boolean value ) {
 		put( KEY_FULLSCREEN, value );
@@ -507,5 +509,10 @@ public class SPDSettings extends GameSettings {
 
 	public static int ItemsUI() {
 		return getInt(KEY_ItemsUI, 0, 0, 2);
+	}
+
+	public static void graphicStats(boolean value) { put( KEY_StatsUI, value );}
+
+	public static boolean graphicStats(){return getBoolean(KEY_StatsUI, true);
 	}
 }

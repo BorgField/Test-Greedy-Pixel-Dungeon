@@ -149,7 +149,7 @@ public enum HeroClass {
 		waterskin.collect();
 
 		TestChest chest = new TestChest();
-		chest.quantity(10).collect();
+		chest.quantity(1).collect();
 
 		new ScrollOfIdentify().identify();
 
@@ -389,7 +389,7 @@ public enum HeroClass {
 
 	private static void doChallengeSpawn(Hero hero) {
 
-		new DictBook().collect();
+
 //		new NewDictBook().collect();
 		if (Dungeon.isChallenged(Challenges.TEST_MODE)) {
 			/*
@@ -400,7 +400,7 @@ public enum HeroClass {
 			mana.attachTo(hero);
 			 */
 			//new WandOfScanningBeam().identify().collect();
-
+			new DictBook().collect();
 			new MobPlacer().collect();
 
 

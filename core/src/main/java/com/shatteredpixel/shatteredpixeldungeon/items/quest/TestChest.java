@@ -126,9 +126,9 @@ public class TestChest extends Item {
 //        //饥饿碎片
 //        items.add(new ShardOfHunger().quantity(1));
         items.add(new TendonHookSickle().quantity(1).identify());
-        items.add(new ScrollOfUpgrade().quantity(0).identify());
-        items.add(new ScrollOfBlank().quantity(20).identify());
-        items.add(new PotionOfStrength().quantity(0).identify());
+//        items.add(new ScrollOfUpgrade().quantity(0).identify());
+        items.add(new ScrollOfBlank().quantity(3).identify());
+//        items.add(new PotionOfStrength().quantity(0).identify());
         items.add(new WheelChair().quantity(1).identify());
         items.add(new ShivaBangle().quantity(1).identify());
 

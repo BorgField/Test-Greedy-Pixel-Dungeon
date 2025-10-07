@@ -726,6 +726,8 @@ public class WndSettings extends WndTabbed {
 		RenderedTextBlock title;
 		ColorBlock sep1;
 		CheckBox ClassUI;
+
+		CheckBox StatsUI;
 		ColorBlock sep2;
 		OptionSlider ItemsUI;
 
@@ -747,6 +749,17 @@ public class WndSettings extends WndTabbed {
 			};
 			ClassUI.checked(SPDSettings.ClassUI());
 			add(ClassUI);
+
+			StatsUI = new CheckBox(Messages.get(this, "graphic_stats")) {
+				@Override
+				protected void onClick() {
+					super.onClick();
+					SPDSettings.graphicStats(checked());
+				}
+			};
+			StatsUI.checked(SPDSettings.graphicStats());
+			add(StatsUI);
+
 
 //			sep2 = new ColorBlock(1, 1, 0xFF000000);
 //			add(sep2);
@@ -780,11 +793,15 @@ public class WndSettings extends WndTabbed {
 
 			if (width > 200) {
 				ClassUI.setRect(0, bottom, width / 2 - 1, BTN_HEIGHT);
-				ItemsUI.setRect(width / 2 + 1, bottom, width / 2 - 1, SLIDER_HEIGHT);
+				StatsUI.setRect(width / 2 + 1, bottom, width / 2 - 1, BTN_HEIGHT);
+				bottom += StatsUI.height() + 2*GAP;
+				ItemsUI.setRect(0, bottom, width / 2 - 1, SLIDER_HEIGHT);
 				bottom += ItemsUI.height() + 2*GAP;
 			} else {
 				ClassUI.setRect(0, bottom, width, BTN_HEIGHT);
 				bottom += ClassUI.height() + 2*GAP;
+				StatsUI.setRect(0, bottom, width, BTN_HEIGHT);
+				bottom += StatsUI.height() + 2*GAP;
 				ItemsUI.setRect(0, bottom, width, SLIDER_HEIGHT);
 				bottom += ItemsUI.height() + 2*GAP;
 			}
