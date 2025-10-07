@@ -121,6 +121,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TimekeepersHourg
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.exotic.PotionOfCleansing;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurning;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfBurst;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfDispelling;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfSwift;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.Pickaxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfElements;
@@ -662,6 +663,14 @@ public abstract class Char extends Actor {
 	}
 
 	public static boolean hit( Char attacker, Char defender, float accMulti, boolean magic ) {
+		// 检查防御者是否有DispellingMini的buff
+		PotionOfDispelling.DispellingMini dispellingBuff = defender.buff(PotionOfDispelling.DispellingMini.class);
+		if (dispellingBuff != null && magic) {
+			// 记录攻击者和防御者信息到buff中
+			dispellingBuff.setAttacker(attacker);
+			dispellingBuff.setDefender(defender);
+		}
+
 		float acuStat = attacker.attackSkill( defender );
 		float defStat = defender.defenseSkill( attacker );
 
@@ -866,6 +875,15 @@ public abstract class Char extends Actor {
 		
 		if (!isAlive() || dmg < 0) {
 			return;
+		}
+
+		// 检查是否有DispellingMini的buff，如果有则处理法术伤害
+		PotionOfDispelling.DispellingMini dispellingBuff = buff(PotionOfDispelling.DispellingMini.class);
+		if (dispellingBuff != null) {
+			if (dispellingBuff.handleMagicDamage(src, dmg)) {
+				// 如果已处理伤害（免疫），则直接返回
+				return;
+			}
 		}
 
 		if(isInvulnerable(src.getClass())){

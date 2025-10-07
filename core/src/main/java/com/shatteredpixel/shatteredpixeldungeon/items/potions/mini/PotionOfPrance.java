@@ -5,6 +5,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.ui.ActionIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.watabou.noosa.Image;
 
@@ -18,10 +19,10 @@ public class PotionOfPrance extends MiniPotion {
     @Override
     public void apply(Hero hero) {
         identify();
-        Buff.prolong(hero, PotionOfPrance.PranceMini.class, 20f);
+        Buff.affect(hero, PotionOfPrance.PranceMini.class);
     }
 
-    public static class PranceMini extends FlavourBuff {
+    public abstract class PranceMini extends Buff implements ActionIndicator.Action {
         {
             type = buffType.POSITIVE;
             announced = true;
@@ -35,9 +36,6 @@ public class PotionOfPrance extends MiniPotion {
         public void tintIcon(Image icon) { icon.hardlight(0.560f, 0.194f, 0.968f); }
 
         @Override
-        public float iconFadePercent() { return Math.max(0, (DURATION - visualcooldown()) / DURATION); }
-
-        @Override
         public String desc() {
             return Messages.get(this, "desc", dispTurns(visualcooldown()));
         }
@@ -46,6 +44,10 @@ public class PotionOfPrance extends MiniPotion {
         public void detach() {
             super.detach();
         }
+
+        private int count = 0;
+
+
 
     }
 }

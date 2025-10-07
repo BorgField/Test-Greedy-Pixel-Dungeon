@@ -1,6 +1,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.potions.mini;
 
 import static com.shatteredpixel.shatteredpixeldungeon.Dungeon.hero;
+import static com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText.MAGIC_DMG;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
@@ -10,9 +11,11 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Bleeding;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.DM100;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Beam;
 import com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.glyphs.AntiMagic;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -35,7 +38,7 @@ public class PotionOfDispelling extends MiniPotion {
     @Override
     public void apply(Hero hero) {
         identify();
-        Buff.affect(hero, PotionOfDispelling.DispellingMini.class).setCount(100);
+        Buff.affect(hero, PotionOfDispelling.DispellingMini.class).setCount(2);
     }
 
     public static class DispellingMini extends Buff {
@@ -44,9 +47,10 @@ public class PotionOfDispelling extends MiniPotion {
             announced = true;
         }
 
-        // 删除这行：private static Object owner; // 这会覆盖父类的owner字段
-
         public static final float DURATION = 20f;
+
+        private Char attacker;
+        private Char defender;
 
         @Override
         public int icon() {
@@ -65,7 +69,7 @@ public class PotionOfDispelling extends MiniPotion {
 
         @Override
         public String desc() {
-            return Messages.get(this, "desc", dispTurns(visualcooldown()));
+            return Messages.get(this, "desc", count);
         }
 
         public int count = 0;
@@ -82,133 +86,59 @@ public class PotionOfDispelling extends MiniPotion {
             count = Math.max(0, count - ct);
         }
 
+        public void setAttacker(Char attacker) {
+            this.attacker = attacker;
+        }
+
+        public void setDefender(Char defender) {
+            this.defender = defender;
+        }
+
+        public Char getAttacker() {
+            return attacker;
+        }
+
+        public Char getDefender() {
+            return defender;
+        }
+
         @Override
         public void detach() {
             super.detach();
         }
 
-        public boolean isImmune() {
-            return true;
-        }
-
-        public void zapBack(Char attacker, int damage){
-            // 获取拥有此buff的角色（防御者）
-            Char defender = (Char) target;
-            if (defender == null || attacker == null) {
-                return;
+        // 处理法术伤害，如果存在攻击目标则免疫伤害并反弹法术
+        public boolean handleMagicDamage(Object src, int damage) {
+            // 检查是否有记录的攻击者和防御者
+            if (attacker == null || defender == null) {
+                return false;
             }
 
             // 检查双方是否都存活
             if (!defender.isAlive() || !attacker.isAlive()) {
-                return;
+                return false;
             }
 
-            // 创建从防御者到攻击者的弹道
-            Ballistica bolt = new Ballistica(defender.pos, attacker.pos, Ballistica.PROJECTILE);
-
-            // 显示魔法弹特效
+            // 显示反弹效果
             defender.sprite.parent.add(new Beam.LightRay(defender.sprite.center(), attacker.sprite.center()));
-
-            // 对攻击者造成原始魔法伤害值的伤害
-            attacker.damage(damage, defender);
 
             // 音效和视觉效果
             Sample.INSTANCE.play(Assets.Sounds.HIT_MAGIC, 1, Random.Float(0.87f, 1.15f));
-            attacker.sprite.burst(0xFFFFFFFF, 10);
+            defender.sprite.burst(0xFFFFFFFF, 10);
 
-            // 日志输出（可选）
-            if (Dungeon.level.heroFOV[defender.pos] || Dungeon.level.heroFOV[attacker.pos]) {
-                GLog.i(Messages.get(this, "zap_back", defender.name(), attacker.name(), damage));
-            }
+            // 对攻击者造成相同的法术伤害
+            DM100.LightningBolt dm100 = new DM100.LightningBolt();
+            attacker.damage(damage, dm100);
+
+//            // 日志输出
+//            if (Dungeon.level.heroFOV[defender.pos] || Dungeon.level.heroFOV[attacker.pos]) {
+//                GLog.i(Messages.get(this, "magic_reflect", defender.name(), attacker.name(), damage));
+//            }
+
+            lossCount(1);
+            if( count==0 )detach();
+
+            return true; // 表示已处理伤害，免疫
         }
-
-//        @Override
-//        public int proc(Armor armor, Char attacker, Char defender, int damage) {
-//            Buff.affect( attacker, Bleeding.class).set( 10 );
-//
-//            return damage;
-//        }
     }
-
-//    public static class RiposteTracker extends Buff implements ActionIndicator.Action {
-//
-//        { actPriority = VFX_PRIO; } // 设置行动优先级为视觉效果优先级
-//
-//        public Char enemy; // 要攻击的敌人
-//
-//        public RiposteTracker() {}
-//
-//        public RiposteTracker(Char enemy) {
-//            this.enemy = enemy;
-//        }
-//
-//        @Override
-//        public boolean act() {
-//            Hero hero = (Hero) target;
-//
-//            // 检查是否可以使用备用剑进行还击
-//            if (hero.canAttack(enemy)) {
-//
-//                // 执行攻击动画和逻辑
-//                target.sprite.attack(enemy.pos, new Callback() {
-//                    @Override
-//                    public void call() {
-//                        // 直接使用当前武器攻击
-//                        hero.attack(enemy);
-//
-//                        // 检查是否拥有弱点标记天赋
-//                        if (hero.hasTalent(Talent.WEAKNESS_MARK) && enemy != null && enemy.isAlive()) {
-//                            Buff.affect(enemy, ArmorBreak.class, hero.pointsInTalent(Talent.WEAKNESS_MARK));
-//                        }
-//
-//                        next(); // 继续下一个动作
-//                    }
-//                });
-//
-//                detach(); // 移除这个Buff
-//                return false; // 不消耗行动点
-//
-//            } else {
-//                // 无法还击的情况
-//                detach();
-//                return true; // 消耗行动点
-//            }
-//        }
-//
-//        @Override
-//        public void detach() {
-//            super.detach();
-//            enemy = null; // 清理引用
-//        }
-//
-//        @Override
-//        public void storeInBundle(Bundle bundle) {
-//            super.storeInBundle(bundle);
-//            bundle.put("enemy", enemy != null ? enemy.id() : -1);
-//        }
-//
-//        @Override
-//        public void restoreFromBundle(Bundle bundle) {
-//            super.restoreFromBundle(bundle);
-//            int enemyId = bundle.getInt("enemy");
-//            if (enemyId != -1) {
-//                enemy = (Char) Actor.findById(enemyId);
-//            }
-//        }
-//
-//        @Override
-//        public String actionName() {
-//            return "";
-//        }
-//
-//        @Override
-//        public int indicatorColor() {
-//            return 0;
-//        }
-//
-//        @Override
-//        public void doAction() {
-//
-//        }
-//    }
 }

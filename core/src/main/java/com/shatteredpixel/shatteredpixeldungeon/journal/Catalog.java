@@ -238,7 +238,7 @@ public enum Catalog {
 
 		EXOTIC_POTIONS.addItems(ExoticPotion.exoToReg.keySet().toArray(new Class[0]));
 
-		MINI_POTIONS.addItems(MiniPotion.regToMini.keySet().toArray(new Class[0]));
+		MINI_POTIONS.addItems(MiniPotion.miniToReg.keySet().toArray(new Class[0]));
 
 		EXOTIC_SCROLLS.addItems(ExoticScroll.exoToReg.keySet().toArray(new Class[0]));
 
