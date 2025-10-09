@@ -173,7 +173,7 @@ public class NewChangesScene extends PixelScene {
                     ShatteredPixelDungeon.switchNoFade(ChangesScene.class);
                 }
             };
-            selection1.icon(new Image(new ItemSprite(new Amulet())));
+            selection1.icon(new Image(Icons.get(Icons.SHPX)));
             selection1.hardlight(Window.TITLE_COLOR);
             selection1.setRect(0, posY, panel.innerWidth(), 0);
             content.add(selection1);

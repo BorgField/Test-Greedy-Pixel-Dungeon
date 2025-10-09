@@ -42,6 +42,7 @@ public enum Icons {
 	NEWS,
 	CHANGES,
 	PREFS,
+	GRPX,
 	SHPX,
 	JOURNAL,
 
@@ -164,8 +165,11 @@ public enum Icons {
 			case PREFS:
 				icon.frame( icon.texture.uvRectBySize( 102, 0, 14, 14 ) );
 				break;
-			case SHPX:
+			case GRPX:
 				icon.frame( icon.texture.uvRectBySize( 119, 0, 16, 16 ) );
+				break;
+			case SHPX:
+				icon.frame( icon.texture.uvRectBySize( 154, 0, 16, 16 ) );
 				break;
 			case JOURNAL:
 				icon.frame( icon.texture.uvRectBySize( 136, 0, 17, 15 ) );

@@ -63,6 +63,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.armor.glyphs.Swiftness;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.glyphs.Thorns;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.glyphs.Viscosity;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfMimicry;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfArcana;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ParchmentScrap;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
@@ -499,6 +500,13 @@ public class Armor extends EquipableItem {
 				}
 			}
 
+			if (Dungeon.hero.buff(PotionOfMimicry.MimicryMini.class) != null){
+				trinityGlyph = Dungeon.hero.buff(PotionOfMimicry.MimicryMini.class).glyph();
+				if (glyph != null && trinityGlyph != null && trinityGlyph.getClass() == glyph.getClass()){
+					trinityGlyph = null;
+				}
+			}
+
 			if (defender instanceof Hero && isEquipped((Hero) defender)
 					&& defender.buff(HolyWard.HolyArmBuff.class) != null){
 				if (glyph != null &&
@@ -751,6 +759,10 @@ public class Armor extends EquipableItem {
 		} else if (owner.buff(BodyForm.BodyFormBuff.class) != null
 				&& owner.buff(BodyForm.BodyFormBuff.class).glyph() != null
 				&& owner.buff(BodyForm.BodyFormBuff.class).glyph().getClass().equals(type)){
+			return true;
+		} else if (owner.buff(PotionOfMimicry.MimicryMini.class) != null
+				&& owner.buff(PotionOfMimicry.MimicryMini.class).glyph() != null
+				&& owner.buff(PotionOfMimicry.MimicryMini.class).glyph().getClass().equals(type)){
 			return true;
 		} else if (glyph != null) {
 			return glyph.getClass() == type;
