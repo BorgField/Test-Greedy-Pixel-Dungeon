@@ -26,6 +26,9 @@ import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.events.EventManager;
+import com.shatteredpixel.shatteredpixeldungeon.events.TurnEndEvent;
+import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.watabou.noosa.Game;
 import com.watabou.utils.Bundlable;
 import com.watabou.utils.Bundle;
@@ -264,8 +267,15 @@ public abstract class Actor implements Bundlable {
 			}
 
 			if  (current != null) {
+				int oldTurn = (int)(Statistics.duration + now);// 记录旧回合数
 
-				now = current.time;
+				now = current.time;  // ← 更新时间
+
+				int newTurn = (int)(Statistics.duration + now);// 检测是否进入新回合
+				if (newTurn > oldTurn && Dungeon.hero != null) {
+					// 发布回合结束事件
+					EventManager.emit(new TurnEndEvent(oldTurn, Statistics.duration, now));
+				}
 				Actor acting = current;
 
 				if (acting instanceof Char && ((Char) acting).sprite != null) {
