@@ -41,6 +41,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CombatStateTracker;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corrosion;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple;
@@ -378,6 +379,13 @@ public abstract class Char extends Actor {
 		if (enemy == null) return false;
 		
 		boolean visibleFight = Dungeon.level.heroFOV[pos] || Dungeon.level.heroFOV[enemy.pos];
+		
+		// 标记攻击方进入战斗状态
+		markCombat(this);
+		// 如果被攻击方是英雄,也标记为战斗状态
+		if (enemy instanceof Hero) {
+			markCombat(enemy);
+		}
 
 		if (enemy.isInvulnerable(getClass())) {
 
@@ -1451,5 +1459,15 @@ public abstract class Char extends Actor {
 
 	public static boolean hasProp( Char ch, Property p){
 		return (ch != null && ch.properties().contains(p));
+	}
+	
+	//标记角色进入战斗状态
+	private void markCombat(Char chara) {
+		if (chara instanceof Hero) {
+			CombatStateTracker tracker = chara.buff(CombatStateTracker.class);
+			if (tracker != null) {
+				tracker.enterCombat();
+			}
+		}
 	}
 }
