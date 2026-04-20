@@ -37,7 +37,7 @@ public class WornShortsword extends MeleeWeapon {
 		tier = 1;
 		
 		bones = false;
-		twoHanded = true;
+		handedType = HandedType.DUAL_PURPOSE;
 	}
 
 	@Override

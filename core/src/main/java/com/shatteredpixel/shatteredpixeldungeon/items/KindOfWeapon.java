@@ -27,6 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.DualWieldTracker;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
@@ -66,89 +67,121 @@ abstract public class KindOfWeapon extends EquipableItem {
 
     @Override
     public boolean doEquip(Hero hero) {
-        boolean isTwoHanded = this instanceof MeleeWeapon && ((MeleeWeapon) this).isTwoHanded();
+        boolean hasShiva = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
+        
+        // 只有 MeleeWeapon 才有 handedType 属性
+        if (!(this instanceof MeleeWeapon)) {
+            return equipOneHanded(hero, hasShiva);
+        }
 
-        if (isTwoHanded) {
-            return handleTwoHandedWeaponEquip(hero);
-        } else {
-            return handleOneHandedWeaponEquip(hero);
+        MeleeWeapon meleeWeapon = (MeleeWeapon) this;
+        
+        // 根据武器类型进入不同的装备流程
+        switch (meleeWeapon.handedType) {
+            case TWO_HANDED:
+                return equipTwoHanded(hero, hasShiva);
+            case DUAL_PURPOSE:
+                return equipDualPurpose(hero, hasShiva);
+            case OFF_HAND:
+                return equipOffHand(hero, hasShiva);
+            case ONE_HANDED:
+            default:
+                return equipOneHanded(hero, hasShiva);
         }
     }
 
-    private boolean handleTwoHandedWeaponEquip(Hero hero) {
-        boolean hasShiva = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
-        // 检查是否可用
-        boolean group1Available = isSlotGroupAvailable(hero, WeaponSlot.PRIMARY_1, WeaponSlot.PRIMARY_2);
-
-        boolean group2Available = hasShiva &&
-                isSlotGroupAvailable(hero, WeaponSlot.PRIMARY_3, WeaponSlot.PRIMARY_4);
+    private boolean equipTwoHanded(Hero hero, boolean hasShiva) {
+        // 检查第一组槽位是否可用
+        boolean group1Available =
+                getWeaponInSlot(hero, WeaponSlot.PRIMARY_1) == null &&
+                getWeaponInSlot(hero, WeaponSlot.PRIMARY_2) == null;
 
         if (group1Available) {
             return equipToSlotGroup(hero, WeaponSlot.PRIMARY_1, WeaponSlot.PRIMARY_2);
-        } else if (group2Available) {
-            return equipToSlotGroup(hero, WeaponSlot.PRIMARY_3, WeaponSlot.PRIMARY_4);
         } else {
-            showTwoHandedEquipSelection(hero);
+            showTwoHandedEquipSelection(hero, hasShiva);
             return false;
         }
     }
 
-    private boolean handleOneHandedWeaponEquip(Hero hero) {
-        boolean hasShiva = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
-
-        List<WeaponSlot> slots = new ArrayList<>();
-        slots.add(WeaponSlot.PRIMARY_1);
-        slots.add(WeaponSlot.PRIMARY_2);
-
-        if (hasShiva) {
-            slots.add(WeaponSlot.PRIMARY_3);
-            slots.add(WeaponSlot.PRIMARY_4);
-        }
-        // 检查是否有空槽位且不被双手武器占用
-        for (WeaponSlot slot : slots) {
-            if (getWeaponInSlot(hero, slot) == null && !isSlotInTwoHandedGroup(hero, slot)) {
+    //装备单手武器到可用的槽位
+    private boolean equipOneHanded(Hero hero, boolean hasShiva) {
+        // 遍历所有可用的主武器槽位
+        for (WeaponSlot slot : getAvailablePrimarySlots(hasShiva)) {
+            if (getWeaponInSlot(hero, slot) == null && !isTwoHandedGroupBlockedSlot(hero, slot)) {
                 return equipToSlot(hero, slot);
             }
         }
         // 所有槽位都被占用，弹出选择窗口
-        showOneHandedEquipSelection(hero);
+        showOneHandedEquipSelection(hero, hasShiva);
         return false;
     }
 
-    // 检查槽位是否属于被双手武器占用的组
-    private boolean isSlotInTwoHandedGroup(Hero hero, WeaponSlot slot) {
-        if (slot == WeaponSlot.PRIMARY_1 || slot == WeaponSlot.PRIMARY_2) {
-            KindOfWeapon weapon1 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_1);
-            KindOfWeapon weapon2 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_2);
-
-            return (weapon1 instanceof MeleeWeapon && ((MeleeWeapon) weapon1).isTwoHanded()) ||
-                    (weapon2 instanceof MeleeWeapon && ((MeleeWeapon) weapon2).isTwoHanded());
-        } else if (slot == WeaponSlot.PRIMARY_3 || slot == WeaponSlot.PRIMARY_4) {
-            KindOfWeapon weapon3 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_3);
-            KindOfWeapon weapon4 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_4);
-
-            return (weapon3 instanceof MeleeWeapon && ((MeleeWeapon) weapon3).isTwoHanded()) ||
-                    (weapon4 instanceof MeleeWeapon && ((MeleeWeapon) weapon4).isTwoHanded());
+    private boolean equipOffHand(Hero hero, boolean hasShiva) {
+        List<WeaponSlot> targetSlots = new ArrayList<>();
+        targetSlots.add(WeaponSlot.PRIMARY_2);
+        if (hasShiva) {
+            targetSlots.add(WeaponSlot.PRIMARY_4);
         }
 
+        //寻找第一个可用的位置
+        for (WeaponSlot slot : targetSlots) {
+            KindOfWeapon currentWeapon = getWeaponInSlot(hero, slot);
+            if ((currentWeapon == null || currentWeapon.doUnequip(hero, true, false))
+                    && !isTwoHandedGroupBlockedSlot(hero, slot)) {
+                return equipToSlot(hero, slot);
+            }
+        }
+        GLog.w(Messages.get(KindOfWeapon.class, "offhand_no_slot"));
         return false;
     }
 
-    private boolean isSlotGroupAvailable(Hero hero, WeaponSlot slot1, WeaponSlot slot2) {
-        return getWeaponInSlot(hero, slot1) == null && getWeaponInSlot(hero, slot2) == null;
+    private boolean equipDualPurpose(Hero hero, boolean hasShiva) {
+        // 优先尝试单手模式 - 遍历所有可用的主武器槽位
+        for (WeaponSlot slot : getAvailablePrimarySlots(hasShiva)) {
+            if (getWeaponInSlot(hero, slot) == null && !isTwoHandedGroupBlockedSlot(hero, slot)) {
+                return equipToSlot(hero, slot);
+            }
+        }
+        
+        // 单手模式失败,降级为双手模式
+        return equipTwoHanded(hero, hasShiva);
     }
 
+    // 检查指定槽位是否被双手武器锁定
+    private boolean isTwoHandedGroupBlockedSlot(Hero hero, WeaponSlot slot) {
+        WeaponSlot groupSlot1, groupSlot2;
+
+        if (slot == WeaponSlot.PRIMARY_1 || slot == WeaponSlot.PRIMARY_2) {
+            groupSlot1 = WeaponSlot.PRIMARY_1;
+            groupSlot2 = WeaponSlot.PRIMARY_2;
+        } else if (slot == WeaponSlot.PRIMARY_3 || slot == WeaponSlot.PRIMARY_4) {
+            groupSlot1 = WeaponSlot.PRIMARY_3;
+            groupSlot2 = WeaponSlot.PRIMARY_4;
+        } else {
+            return false; // 其他槽位不属于双手武器组
+        }
+
+        // 检查组内是否有双手武器
+        return isSlotOccupiedByTwoHandedWeapon(hero, groupSlot1) ||
+                isSlotOccupiedByTwoHandedWeapon(hero, groupSlot2);
+    }
+
+
     private boolean equipToSlotGroup(Hero hero, WeaponSlot mainSlot, WeaponSlot secondarySlot) {
-        // 清空次要槽位
-        setWeaponInSlot(hero, secondarySlot, null);
+        // 卸下次要槽位的武器
+        KindOfWeapon secondaryWeapon = getWeaponInSlot(hero, secondarySlot);
+        if (secondaryWeapon != null) {
+            if (!secondaryWeapon.doUnequip(hero, true, false)) {
+                return false; // 如果卸下失败（例如被诅咒），则取消装备
+            }
+        }
 
         // 装备到主槽位
         return equipToSlot(hero, mainSlot);
     }
 
-    private void showTwoHandedEquipSelection(Hero hero) {
-        boolean hasShiva = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
-
+    private void showTwoHandedEquipSelection(Hero hero, boolean hasShiva) {
         String group1Status =
                 getSlotGroupStatus(hero, WeaponSlot.PRIMARY_1, WeaponSlot.PRIMARY_2);
         String group2Status = hasShiva ?
@@ -182,20 +215,50 @@ abstract public class KindOfWeapon extends EquipableItem {
         });
     }
 
-    private void showOneHandedEquipSelection(Hero hero) {
+    //获取可用的主武器槽位列表
+    private List<WeaponSlot> getAvailablePrimarySlots(boolean hasShiva) {
+        List<WeaponSlot> slots = new ArrayList<>();
+        slots.add(WeaponSlot.PRIMARY_1);
+        slots.add(WeaponSlot.PRIMARY_2);
+        if (hasShiva) {
+            slots.add(WeaponSlot.PRIMARY_3);
+            slots.add(WeaponSlot.PRIMARY_4);
+        }
+        return slots;
+    }
+
+    // 检查并卸下单手武器选择窗口中选中槽位所在组的双手武器
+    private void checkAndUnequipTwoHandedGroupIfNeeded(Hero hero, WeaponSlot selectedSlot) {
+        // 确定选中槽位属于哪个组
+        WeaponSlot groupSlot1, groupSlot2;
+
+        if (selectedSlot == WeaponSlot.PRIMARY_1 || selectedSlot == WeaponSlot.PRIMARY_2) {
+            groupSlot1 = WeaponSlot.PRIMARY_1;
+            groupSlot2 = WeaponSlot.PRIMARY_2;
+        } else if (selectedSlot == WeaponSlot.PRIMARY_3 || selectedSlot == WeaponSlot.PRIMARY_4) {
+            groupSlot1 = WeaponSlot.PRIMARY_3;
+            groupSlot2 = WeaponSlot.PRIMARY_4;
+        } else {
+            return; // SECONDARY 或其他槽位不属于双手武器组
+        }
+
+        // 如果该组有双手武器,则卸下
+        if (isSlotOccupiedByTwoHandedWeapon(hero, groupSlot1) ||
+                isSlotOccupiedByTwoHandedWeapon(hero, groupSlot2)) {
+            unequipSlotGroup(hero, groupSlot1, groupSlot2);
+        }
+    }
+
+    private void showOneHandedEquipSelection(Hero hero, boolean hasShiva) {
         List<String> options = new ArrayList<>();
         List<WeaponSlot> slotList = new ArrayList<>();
 
-        boolean hasShiva = hero.buff(ShivaBangle.MultiArmBlows.class) != null;
-
-        addSlotOption(hero, options, slotList, WeaponSlot.PRIMARY_1);
-        addSlotOption(hero, options, slotList, WeaponSlot.PRIMARY_2);
-
-        if (hasShiva) {
-            addSlotOption(hero, options, slotList, WeaponSlot.PRIMARY_3);
-            addSlotOption(hero, options, slotList, WeaponSlot.PRIMARY_4);
+        // 添加所有可用的主武器槽位
+        for (WeaponSlot slot : getAvailablePrimarySlots(hasShiva)) {
+            addSlotOption(hero, options, slotList, slot);
         }
 
+        // 如果是 CHAMPION 职业,添加副武器槽位
         if (hero.subClass == HeroSubClass.CHAMPION) {
             addSlotOption(hero, options, slotList, WeaponSlot.SECONDARY);
         }
@@ -211,32 +274,8 @@ abstract public class KindOfWeapon extends EquipableItem {
                 if (index >= 0 && index < slotList.size()) {
                     WeaponSlot selectedSlot = slotList.get(index);
 
-                    // 检查当前选中的槽位所在的组是否有双手武器，并卸下
-                    if (selectedSlot == WeaponSlot.PRIMARY_1 || selectedSlot == WeaponSlot.PRIMARY_2) {
-                        KindOfWeapon weaponInSlot1 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_1);
-                        KindOfWeapon weaponInSlot2 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_2);
-
-                        boolean isSlot1TwoHanded = weaponInSlot1 instanceof MeleeWeapon &&
-                                ((MeleeWeapon) weaponInSlot1).isTwoHanded();
-                        boolean isSlot2TwoHanded = weaponInSlot2 instanceof MeleeWeapon &&
-                                ((MeleeWeapon) weaponInSlot2).isTwoHanded();
-
-                        if (isSlot1TwoHanded || isSlot2TwoHanded) {
-                            unequipSlotGroup(hero, WeaponSlot.PRIMARY_1, WeaponSlot.PRIMARY_2);
-                        }
-                    } else if (selectedSlot == WeaponSlot.PRIMARY_3 || selectedSlot == WeaponSlot.PRIMARY_4) {
-                        KindOfWeapon weaponInSlot3 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_3);
-                        KindOfWeapon weaponInSlot4 = getWeaponInSlot(hero, WeaponSlot.PRIMARY_4);
-
-                        boolean isSlot3TwoHanded = weaponInSlot3 instanceof MeleeWeapon &&
-                                ((MeleeWeapon) weaponInSlot3).isTwoHanded();
-                        boolean isSlot4TwoHanded = weaponInSlot4 instanceof MeleeWeapon &&
-                                ((MeleeWeapon) weaponInSlot4).isTwoHanded();
-
-                        if (isSlot3TwoHanded || isSlot4TwoHanded) {
-                            unequipSlotGroup(hero, WeaponSlot.PRIMARY_3, WeaponSlot.PRIMARY_4);
-                        }
-                    }
+                    // 检查并卸下选中槽位所在组的双手武器
+                    checkAndUnequipTwoHandedGroupIfNeeded(hero, selectedSlot);
 
                     // 装备当前武器到指定槽位
                     equipToSlot(hero, selectedSlot);
@@ -246,21 +285,7 @@ abstract public class KindOfWeapon extends EquipableItem {
     }
 
     private void addSlotOption(Hero hero, List<String> options, List<WeaponSlot> slotList, WeaponSlot slot) {
-        KindOfWeapon weapon = getWeaponInSlot(hero, slot);
-        String weaponName;
-
-        // 检查是否是次要槽位且被双手武器占用
-        if (slot == WeaponSlot.PRIMARY_2 && isSlotOccupiedByTwoHandedWeapon(hero, WeaponSlot.PRIMARY_1)) {
-            // 使用PRIMARY_1槽位的武器名称
-            KindOfWeapon primaryWeapon = getWeaponInSlot(hero, WeaponSlot.PRIMARY_1);
-            weaponName = primaryWeapon != null ? Messages.titleCase(primaryWeapon.trueName()) : Messages.get(KindOfWeapon.class, "empty");
-        } else if (slot == WeaponSlot.PRIMARY_4 && isSlotOccupiedByTwoHandedWeapon(hero, WeaponSlot.PRIMARY_3)) {
-            // 使用PRIMARY_3槽位的武器名称
-            KindOfWeapon primaryWeapon = getWeaponInSlot(hero, WeaponSlot.PRIMARY_3);
-            weaponName = primaryWeapon != null ? Messages.titleCase(primaryWeapon.trueName()) : Messages.get(KindOfWeapon.class, "empty");
-        } else {
-            weaponName = weapon != null ? Messages.titleCase(weapon.trueName()) : Messages.get(KindOfWeapon.class, "empty");
-        }
+        String weaponName = getWeaponNameForSlot(hero, slot);
 
         if (weaponName.length() > MAX_NAME_LENGTH) {
             weaponName = weaponName.substring(0, MAX_NAME_LENGTH - 3) + "...";
@@ -271,6 +296,21 @@ abstract public class KindOfWeapon extends EquipableItem {
         slotList.add(slot);
     }
 
+    // 获取槽位中武器的名称，如果是次要槽位且被双手武器占用，则使用主槽位的武器名称
+    private String getWeaponNameForSlot(Hero hero, WeaponSlot slot) {
+        KindOfWeapon weapon = getWeaponInSlot(hero, slot);
+
+        // 检查是否是次要槽位且被双手武器占用
+        if (slot == WeaponSlot.PRIMARY_2 && isSlotOccupiedByTwoHandedWeapon(hero, WeaponSlot.PRIMARY_1)) {
+            weapon = getWeaponInSlot(hero, WeaponSlot.PRIMARY_1);
+        } else if (slot == WeaponSlot.PRIMARY_4 && isSlotOccupiedByTwoHandedWeapon(hero, WeaponSlot.PRIMARY_3)) {
+            weapon = getWeaponInSlot(hero, WeaponSlot.PRIMARY_3);
+        }
+
+        return weapon != null ? Messages.titleCase(weapon.trueName()) : Messages.get(KindOfWeapon.class, "empty");
+    }
+
+
     // 检查槽位是否被双手武器占用
     private boolean isSlotOccupiedByTwoHandedWeapon(Hero hero, WeaponSlot slot) {
         KindOfWeapon weapon = getWeaponInSlot(hero, slot);
@@ -278,11 +318,8 @@ abstract public class KindOfWeapon extends EquipableItem {
     }
 
     private String getSlotGroupStatus(Hero hero, WeaponSlot slot1, WeaponSlot slot2) {
-        KindOfWeapon weapon1 = getWeaponInSlot(hero, slot1);
-        KindOfWeapon weapon2 = getWeaponInSlot(hero, slot2);
-
-        String weapon1Name = weapon1 != null ? Messages.titleCase(weapon1.trueName()) : Messages.get(KindOfWeapon.class, "empty");
-        String weapon2Name = weapon2 != null ? Messages.titleCase(weapon2.trueName()) : Messages.get(KindOfWeapon.class, "empty");
+        String weapon1Name = getWeaponNameForSlot(hero, slot1);
+        String weapon2Name = getWeaponNameForSlot(hero, slot2);
 
         if (weapon1Name.length() > MAX_NAME_LENGTH) {
             weapon1Name = weapon1Name.substring(0, MAX_NAME_LENGTH - 3) + "...";
@@ -295,15 +332,12 @@ abstract public class KindOfWeapon extends EquipableItem {
     }
 
     public static void unequipSlotGroup(Hero hero, WeaponSlot slot1, WeaponSlot slot2) {
-        unequipWeaponInSlot(hero, slot1);
-        unequipWeaponInSlot(hero, slot2);
-    }
+        // 批量卸下,避免多次UI刷新
+        KindOfWeapon weapon1 = getWeaponInSlot(hero, slot1);
+        KindOfWeapon weapon2 = getWeaponInSlot(hero, slot2);
 
-    private static void unequipWeaponInSlot(Hero hero, WeaponSlot slot) {
-        KindOfWeapon weapon = getWeaponInSlot(hero, slot);
-        if (weapon != null) {
-            weapon.doUnequip(hero, true, false);
-        }
+        if (weapon1 != null) weapon1.doUnequip(hero, true, false);
+        if (weapon2 != null) weapon2.doUnequip(hero, true, false);
     }
 
     private static KindOfWeapon getWeaponInSlot(Hero hero, WeaponSlot slot) {
@@ -360,6 +394,9 @@ abstract public class KindOfWeapon extends EquipableItem {
             Talent.onItemEquipped(hero, this);
             Badges.validateDuelistUnlock();
             updateQuickslot();
+            
+            // 激活双持武器状态追踪器buff
+            DualWieldTracker.ensureActive(hero);
 
             cursedKnown = true;
             if (cursed) {

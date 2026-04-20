@@ -62,8 +62,37 @@ import java.util.ArrayList;
 public class MeleeWeapon extends Weapon {
 
 	public static String AC_ABILITY = "ABILITY";
-	public boolean twoHanded = false;
-	public boolean isTwoHanded() {return twoHanded;}
+	public enum HandedType {
+		ONE_HANDED,			// 单手
+		TWO_HANDED,			// 双手
+		DUAL_PURPOSE,		// 两用
+		OFF_HAND			// 副武器
+	}
+
+	public HandedType handedType = HandedType.ONE_HANDED;
+
+	public boolean isTwoHanded() {
+		return handedType == HandedType.TWO_HANDED;
+	}
+
+	// 检查 DUAL_PURPOSE 武器是否以双手模式装备（副手槽为空）
+	public boolean isDualTwoHanded(Hero hero) {
+		if (handedType != HandedType.DUAL_PURPOSE) {
+			return isTwoHanded();
+		}
+		
+		// 对于 DUAL_PURPOSE 武器，检查它所在的槽位组
+		if (this == hero.belongings.weapon || this == hero.belongings.weapon2) {
+			// 在第一组槽位中，检查 PRIMARY_2 是否为空
+			return hero.belongings.weapon2 == null;
+		} else if (this == hero.belongings.weapon3 || this == hero.belongings.weapon4) {
+			// 在第二组槽位中，检查 PRIMARY_4 是否为空
+			return hero.belongings.weapon4 == null;
+		}
+		
+		return false;
+	}
+
 
 	@Override
 	public void activate(Char ch) {

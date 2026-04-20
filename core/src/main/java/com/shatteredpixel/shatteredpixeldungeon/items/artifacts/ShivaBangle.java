@@ -81,7 +81,7 @@ public class ShivaBangle extends Artifact {
     @Override
     public ArrayList<String> actions( Hero hero ) {
         ArrayList<String> actions = super.actions( hero );
-        if (isIdentified() && !cursed){
+        if (isEquipped( hero ) && !cursed){
             actions.add(AC_OUTFIT);
             actions.add(AC_FANATICAL);
         }
