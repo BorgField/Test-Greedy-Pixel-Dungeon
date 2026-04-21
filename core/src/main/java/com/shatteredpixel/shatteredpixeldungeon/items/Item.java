@@ -59,9 +59,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 
 public class Item implements Bundlable {
 
@@ -105,8 +104,8 @@ public class Item implements Bundlable {
 
 	public int customNoteID = -1;
 	
-	// 动态项目属性Tag系统(懒加载)
-	private Map<String, ItemTag> tags;
+	// 物品标签系统 (使用 EnumSet 存储)
+	private EnumSet<ItemTag> tags;
 	
 	public static final Comparator<Item> itemComparator = new Comparator<Item>() {
 		@Override
@@ -152,6 +151,14 @@ public class Item implements Bundlable {
 	//resets an item's properties, to ensure consistency between runs
 	public void reset(){
 		keptThoughLostInvent = false;
+	}
+
+	public Item() {
+		initTags();
+	}
+
+	protected void initTags() {
+		// 基类不添加任何标签，由子类决定
 	}
 
 	public boolean keptThroughLostInventory(){
@@ -545,7 +552,7 @@ public class Item implements Bundlable {
 		// Append visible tags to item description
 		List<ItemTag> visibleTags = getVisibleTags();
 		if (!visibleTags.isEmpty()) {
-			info += "\n\n";
+			info += "\n";
 			for (ItemTag tag : visibleTags) {
 				info += "Ⅶ #"+ getTagDescription(tag) + "Ⅶ ";
 			}
@@ -560,16 +567,13 @@ public class Item implements Bundlable {
 	}
 
 	protected String getTagDescription(ItemTag tag) {
-		// Use full key path directly without class prefix
-		String tagKey = "items.tag." + tag.key();
+		// 使用 enum 名称作为 key
+		String tagKey = "items.tag." + tag.name().toLowerCase();
 		String desc = Messages.get((Class)null, tagKey);
 		
-		// If no specific description exists, use a default format
+		// 如果没有特定描述，使用默认格式
 		if (desc == null || (!desc.isEmpty() && desc.startsWith("!"))) {
-			desc = Messages.get((Class)null, "items.tag.default", tag.key());
-			if (tag.level() > 0) {
-				desc += " (" + tag.level() + ")";
-			}
+			desc = Messages.get((Class)null, "items.tag.default", tag.getDisplayName());
 		}
 		
 		return desc;
@@ -639,8 +643,14 @@ public class Item implements Bundlable {
 		bundle.put( KEPT_LOST, keptThoughLostInvent );
 		if (customNoteID != -1)     bundle.put(CUSTOM_NOTE_ID, customNoteID);
 		bundle.put(BAN_UPGRADED, banUpgraded);
+		
+		// 保存所有标签（包括可见和隐藏标签）
 		if (tags != null && !tags.isEmpty()) {
-			bundle.put(TAGS, new ArrayList<>(tags.values()));
+			ArrayList<String> tagNames = new ArrayList<>();
+			for (ItemTag tag : tags) {
+				tagNames.add(tag.name());
+			}
+			bundle.put(TAGS, tagNames.toArray(new String[0]));
 		}
 	}
 	
@@ -672,11 +682,14 @@ public class Item implements Bundlable {
 		
 		// 恢复标签
 		if (bundle.contains(TAGS)) {
-			Collection<? extends Bundlable> restoredTags = bundle.getCollection(TAGS);
-			if (restoredTags != null) {
-				for (Bundlable tag : restoredTags) {
-					if (tag instanceof ItemTag) {
-						addTag((ItemTag) tag);
+			String[] tagNames = bundle.getStringArray(TAGS);
+			if (tagNames != null) {
+				for (String tagName : tagNames) {
+					try {
+						ItemTag tag = ItemTag.valueOf(tagName);
+						addTag(tag);
+					} catch (IllegalArgumentException e) {
+						// 忽略无效的标签名称（兼容性处理）
 					}
 				}
 			}
@@ -781,42 +794,37 @@ public class Item implements Bundlable {
 	// ==================== 标签系统 ====================
 
 	/**
-	 * 获取标签映射(懒加载)
-	 * @return 标签映射实例
+	 * 获取标签集合(懒加载)
+	 * @return 标签集合实例
 	 */
-	private Map<String, ItemTag> getTagsMap() {
+	private EnumSet<ItemTag> getTagsSet() {
 		if (tags == null) {
-			tags = new HashMap<>();
+			tags = EnumSet.noneOf(ItemTag.class);
 		}
 		return tags;
 	}
 	
 	/**
-	 * 给物品添加标签。如果存在相同键的标签，则会被替换。
-	 * @param tag 要添加的标签(可以是预定义标签或新实例)
+	 * 给物品添加标签
+	 * @param tag 要添加的标签
 	 */
 	public void addTag(ItemTag tag) {
-		if (tag == null || tag.key() == null) return;
-		// 复制标签以避免修改原始预定义实例
-		ItemTag tagCopy = tag.copy();
-		getTagsMap().put(tagCopy.key(), tagCopy);
-		onTagAdded(tagCopy);
+		if (tag == null) return;
+		getTagsSet().add(tag);
+		onTagAdded(tag);
 		updateQuickslot();
 	}
 
 	/**
 	 * 批量添加多个标签(优化版,只触发一次UI更新)
-	 * @param tags 要添加的标签数组
+	 * @param tagsToAdd 要添加的标签数组
 	 */
-	public void addTags(ItemTag... tags) {
-		if (tags == null || tags.length == 0) return;
+	public void addTags(ItemTag... tagsToAdd) {
+		if (tagsToAdd == null || tagsToAdd.length == 0) return;
 		boolean anyAdded = false;
-		for (ItemTag tag : tags) {
-			if (tag != null && tag.key() != null) {
-				// 复制标签以避免修改原始预定义实例
-				ItemTag tagCopy = tag.copy();
-				getTagsMap().put(tagCopy.key(), tagCopy);
-				onTagAdded(tagCopy);
+		for (ItemTag tag : tagsToAdd) {
+			if (tag != null && getTagsSet().add(tag)) {
+				onTagAdded(tag);
 				anyAdded = true;
 			}
 		}
@@ -827,161 +835,81 @@ public class Item implements Bundlable {
 	}
 
 	/**
-	 * 通过键从物品中移除标签。
-	 * @param key 要移除的标签的键
+	 * 从物品中移除标签
+	 * @param tag 要移除的标签
 	 * @return 如果标签被移除返回 true，如果不存在返回 false
 	 */
-	public boolean removeTag(String key) {
+	public boolean removeTag(ItemTag tag) {
 		if (tags == null) return false;
-		ItemTag removed = tags.remove(key);
-		if (removed != null) {
-			onTagRemoved(removed);
+		boolean removed = tags.remove(tag);
+		if (removed) {
+			onTagRemoved(tag);
 			updateQuickslot();
 		}
-		return removed != null;
+		return removed;
 	}
 
 	/**
-	 * 检查物品是否有特定标签。
-	 * @param key 要检查的标签的键
+	 * 检查物品是否有特定标签
+	 * @param tag 要检查的标签
 	 * @return 如果标签存在返回 true
 	 */
-	public boolean hasTag(String key) {
-		return tags != null && tags.containsKey(key);
+	public boolean hasTag(ItemTag tag) {
+		return tags != null && tags.contains(tag);
 	}
 
 	/**
 	 * 检查物品是否有任意一个指定标签
-	 * @param keys 要检查的标签键数组
+	 * @param tagsToCheck 要检查的标签数组
 	 * @return 如果存在任意一个标签返回 true
 	 */
-	public boolean hasAnyTag(String... keys) {
+	public boolean hasAnyTag(ItemTag... tagsToCheck) {
 		if (tags == null) return false;
-		for (String key : keys) {
-			if (tags.containsKey(key)) return true;
+		for (ItemTag tag : tagsToCheck) {
+			if (tags.contains(tag)) return true;
 		}
 		return false;
 	}
 
 	/**
 	 * 检查物品是否同时拥有所有指定标签
-	 * @param keys 要检查的标签键数组
+	 * @param tagsToCheck 要检查的标签数组
 	 * @return 如果拥有所有标签返回 true
 	 */
-	public boolean hasAllTags(String... keys) {
+	public boolean hasAllTags(ItemTag... tagsToCheck) {
 		if (tags == null) return false;
-		for (String key : keys) {
-			if (!tags.containsKey(key)) return false;
+		for (ItemTag tag : tagsToCheck) {
+			if (!tags.contains(tag)) return false;
 		}
 		return true;
 	}
 
 	/**
-	 * 通过键获取特定标签。
-	 * @param key 标签的键
-	 * @return 该标签，如果不存在返回 null
-	 */
-	public ItemTag getTag(String key) {
-		return tags != null ? tags.get(key) : null;
-	}
-
-	/**
-	 * 获取标签的附加数据(便捷方法)
-	 * @param key 标签的键
-	 * @return 标签的附加数据，如果标签不存在返回 null
-	 */
-	public Bundle getTagData(String key) {
-		ItemTag tag = getTag(key);
-		return tag != null ? tag.data() : null;
-	}
-		
-	/**
-	 * 设置标签的附加数据(便捷方法)
-	 * @param key 标签的键
-	 * @param data 要设置的附加数据
-	 */
-	public void setTagData(String key, Bundle data) {
-		if (!hasTag(key)) {
-			addTag(new ItemTag(key));
-		}
-		ItemTag tag = getTag(key);
-		if (tag != null) {
-			tag.setData(data);
-		}
-	}
-
-	/**
-	 * 获取物品的所有可见标签，按优先级排序。
+	 * 获取物品的所有可见标签
 	 * @return 可见标签列表
 	 */
 	public List<ItemTag> getVisibleTags() {
 		List<ItemTag> visible = new ArrayList<>();
 		if (tags != null) {
-			for (ItemTag tag : tags.values()) {
+			for (ItemTag tag : tags) {
 				if (tag.isVisible()) {
 					visible.add(tag);
 				}
 			}
-			Collections.sort(visible, ItemTag.orderByPriority);
 		}
 		return visible;
 	}
 
 	/**
-	 * 获取物品的所有标签(包括可见和隐藏标签)。
-	 * @return 所有标签映射的副本
+	 * 获取物品的所有标签(包括可见和隐藏标签)
+	 * @return 所有标签的副本
 	 */
-	public Map<String, ItemTag> getAllTags() {
-		return tags != null ? new HashMap<>(tags) : new HashMap<>();
+	public EnumSet<ItemTag> getAllTags() {
+		return tags != null ? EnumSet.copyOf(tags) : EnumSet.noneOf(ItemTag.class);
 	}
 
 	/**
-	 * 获取特定标签的等级。
-	 * @param key 标签的键
-	 * @return 标签等级，如果标签不存在返回 0
-	 */
-	public int getTagLevel(String key) {
-		ItemTag tag = getTag(key);
-		return tag != null ? tag.level() : 0;
-	}
-
-	/**
-	 * 设置标签的等级。如果标签不存在则创建。
-	 * @param key 标签的键
-	 * @param level 新的等级
-	 */
-	public void setTagLevel(String key, int level) {
-		if (tags != null && tags.containsKey(key)) {
-			tags.get(key).level(level);
-		} else {
-			addTag(new ItemTag(key, ItemTag.Type.VISIBLE, level));
-		}
-	}
-
-	/**
-	 * 检查物品是否有可见的标签。
-	 * @param key 标签的键
-	 * @return 如果标签存在且可见返回 true
-	 */
-	public boolean hasVisibleTag(String key) {
-		ItemTag tag = getTag(key);
-		return tag != null && tag.isVisible();
-	}
-		
-	/**
-	 * 切换标签的可见性(显示/隐藏)。
-	 * @param key 标签的键
-	 * @param visible true 设为可见，false 设为隐藏
-	 */
-	public void setTagVisibility(String key, boolean visible) {
-		ItemTag tag = getTag(key);
-		if (tag != null) {
-			tag.setType(visible ? ItemTag.Type.VISIBLE : ItemTag.Type.HIDDEN);
-		}
-	}
-
-	/**
-	 * 清空物品的所有标签。
+	 * 清空物品的所有标签
 	 */
 	public void clearTags() {
 		if (tags != null) {
