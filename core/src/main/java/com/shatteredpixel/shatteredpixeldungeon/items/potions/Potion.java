@@ -33,6 +33,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Ooze;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
+import com.shatteredpixel.shatteredpixeldungeon.events.EventManager;
+import com.shatteredpixel.shatteredpixeldungeon.events.PotionUsedEvent;
 import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.ItemStatusHandler;
@@ -307,6 +309,8 @@ public class Potion extends Item {
 		if (!anonymous) {
 			Catalog.countUse(getClass());
 			if (Random.Float() < talentChance) {
+				// 发射药水使用事件（新事件系统）
+				EventManager.emit(new PotionUsedEvent(curUser, this, curUser.pos, talentFactor));
 				Talent.onPotionUsed(curUser, curUser.pos, talentFactor);
 			}
 		}
@@ -329,7 +333,9 @@ public class Potion extends Item {
 			if (!anonymous) {
 				Catalog.countUse(getClass());
 				if (Random.Float() < talentChance) {
-					Talent.onPotionUsed(curUser, cell, talentFactor);
+					// 发射药水使用事件（新事件系统）
+					// 事件订阅者会自动调用 Talent.onPotionUsed()，无需重复调用
+					EventManager.emit(new PotionUsedEvent(curUser, this, cell, talentFactor));
 				}
 			}
 			

@@ -31,6 +31,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.GuidingLight;
+import com.shatteredpixel.shatteredpixeldungeon.events.ArtifactUsedEvent;
+import com.shatteredpixel.shatteredpixeldungeon.events.EventManager;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindofMisc;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
@@ -94,6 +96,11 @@ public class Artifact extends KindofMisc {
 		}
 		passiveBuff = passiveBuff();
 		passiveBuff.attachTo(ch);
+		
+		// 发射神器使用事件（新事件系统）
+		if (ch instanceof Hero) {
+			EventManager.emit(new ArtifactUsedEvent((Hero) ch, this));
+		}
 	}
 
 	@Override

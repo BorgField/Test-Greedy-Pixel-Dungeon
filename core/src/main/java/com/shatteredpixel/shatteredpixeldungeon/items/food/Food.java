@@ -31,6 +31,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Hunger;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite;
+import com.shatteredpixel.shatteredpixeldungeon.events.EventManager;
+import com.shatteredpixel.shatteredpixeldungeon.events.FoodEatenEvent;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HornOfPlenty;
@@ -86,8 +88,10 @@ public class Food extends Item {
 			
 			hero.spend( eatingTime() );
 
+			// 发射食物食用事件（新事件系统）
+			EventManager.emit(new FoodEatenEvent(hero, this, energy));
 			Talent.onFoodEaten(hero, energy, this);
-			
+
 			Statistics.foodEaten++;
 			Badges.validateFoodEaten();
 			
