@@ -87,7 +87,7 @@ public class DualWieldTracker extends Buff {
 					// 调用 isDualTwoHanded 会重新计算状态
 					// 虽然返回值没有被使用，但这个方法可能会触发内部状态更新
 					meleeWeapon.isDualTwoHanded(hero);
-					GLog.i("刷新两用武器状态：%s", meleeWeapon.name());
+//					GLog.i("刷新两用武器状态：%s", meleeWeapon.name());
 					needsUpdate = true;
 				}
 			}

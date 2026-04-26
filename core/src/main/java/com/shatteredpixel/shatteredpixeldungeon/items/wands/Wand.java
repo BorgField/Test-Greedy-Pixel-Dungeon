@@ -48,6 +48,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.Flare;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.MagicMissile;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TalismanOfForesight;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.MagicalHolster;
@@ -101,6 +102,13 @@ public abstract class Wand extends Item {
 		usesTargeting = true;
 		bones = true;
 	}
+
+	@Override
+	protected void initTags() {
+		super.initTags();
+		addTag(ItemTag.WANDS_SYSTEM);
+	}
+
 	
 	@Override
 	public ArrayList<String> actions( Hero hero ) {

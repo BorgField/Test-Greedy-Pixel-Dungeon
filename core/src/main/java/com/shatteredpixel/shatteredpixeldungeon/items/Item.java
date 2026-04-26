@@ -549,7 +549,7 @@ public class Item implements Bundlable {
 
 		String info = desc();
 		
-		// Append visible tags to item description
+		// 在物品描述后附加可见标签
 		List<ItemTag> visibleTags = getVisibleTags();
 		if (!visibleTags.isEmpty()) {
 			info += "\n";

@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
@@ -32,6 +33,10 @@ public class Greatshield extends MeleeWeapon {
 		image = ItemSpriteSheet.GREATSHIELD;
 
 		tier = 5;
+		
+		// 添加盾牌系统标签，用于双持判断
+		addTags(ItemTag.SHIELD_SYSTEM,
+				ItemTag.TWOHAND);
 	}
 
 	@Override

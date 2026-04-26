@@ -78,14 +78,19 @@ public enum ItemTag {
 	BROKEN("tag.broken"),
 	ENCHANTED("tag.enchanted"),
 	GLOWING("tag.glowing"),
+
+	// ==================== 武器双持类型标签 ====================
+	ONEHAND("tag.onehand", true),
+	TWOHAND("tag.twohanded", true),
+	DUALHAND("tag.dualhand", true),
+	OFFHAND("tag.offhand", true),
+
 	
 	// ==================== 隐藏标签 (内部逻辑用) ====================
 	FRAGILE("tag.fragile", false),
 	MELEE("tag.melee", false),
 	RANGED("tag.ranged", false),
-	MAGIC("tag.magic", false),
-	ONEHAND("tag.onehand", false),
-	TWOHANDED("tag.twohanded", false);
+	MAGIC("tag.magic", false);
 	
 	// ==================== 字段 ====================
 	private final String i18nKey;    // 国际化键值
