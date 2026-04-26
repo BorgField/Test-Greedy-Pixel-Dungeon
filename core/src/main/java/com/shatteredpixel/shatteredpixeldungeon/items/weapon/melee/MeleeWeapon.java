@@ -38,6 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.HolyWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRecharging;
@@ -73,6 +74,13 @@ public class MeleeWeapon extends Weapon {
 
 	public boolean isTwoHanded() {
 		return handedType == HandedType.TWO_HANDED;
+	}
+
+	@Override
+	protected void initTags() {
+		super.initTags();
+		addTag(ItemTag.WEAPON_SYSTEM);
+		addTag(ItemTag.MELEE);
 	}
 
 	// 检查 DUAL_PURPOSE 武器是否以双手模式装备（副手槽为空）

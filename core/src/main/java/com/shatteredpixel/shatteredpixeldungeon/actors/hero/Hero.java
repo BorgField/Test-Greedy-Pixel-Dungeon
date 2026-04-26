@@ -462,7 +462,7 @@ public class Hero extends Char {
 
 	@Override
 	public boolean blockSound(float pitch) {
-		if ( multiWielding.weaponNotNull() && multiWielding.weaponDefenseFactor(this) >= 4 ){
+		if ( multiWielding.hasAnyWeapon() && multiWielding.weaponDefenseFactor(this) >= 4 ){
 			Sample.INSTANCE.play( Assets.Sounds.HIT_PARRY, 1, pitch);
 			return true;
 		}
@@ -661,7 +661,7 @@ public class Hero extends Char {
 			}
 			if (armDr > 0) dr += armDr;
 		}
-		if (multiWielding.weaponNotNull() && !RingOfForce.fightingUnarmed(this))  {
+		if (multiWielding.hasAnyWeapon() && !RingOfForce.fightingUnarmed(this))  {
 			int wepDr = Random.NormalIntRange( 0 , multiWielding.weaponDefenseFactor( this ) );
 			// 检查所有武器的力量需求，取最大值进行惩罚计算
 			int maxStrReq = 0;
@@ -1525,7 +1525,7 @@ public class Hero extends Char {
 
 		KindOfWeapon wep;
 
-		if (multiWielding.weaponNotNull()) damage = multiWielding.weaponProc( this, enemy, damage );
+		if (multiWielding.hasAnyWeapon()) damage = multiWielding.weaponProc( this, enemy, damage );
 
 		if (RingOfForce.fightingUnarmed(this) && !RingOfForce.unarmedGetsWeaponEnchantment(this)){
 			wep = null;
