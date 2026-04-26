@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
@@ -35,6 +36,9 @@ public class BattleAxe extends MeleeWeapon {
 
 		tier = 4;
 		ACC = 1.24f; //24% boost to accuracy
+		handedType = HandedType.DUAL_PURPOSE;
+		addTags(ItemTag.AXE_SYSTEM,
+				ItemTag.DUALHAND);
 	}
 
 	@Override

@@ -42,9 +42,9 @@ public class RoundShield extends MeleeWeapon {
 		hitSoundPitch = 1f;
 
 		tier = 3;
-		
-		// 添加盾牌系统标签，用于双持判断
-		addTag(ItemTag.SHIELD_SYSTEM);
+
+		addTags(ItemTag.SHIELD_SYSTEM,
+				ItemTag.ONEHAND);
 	}
 
 	@Override

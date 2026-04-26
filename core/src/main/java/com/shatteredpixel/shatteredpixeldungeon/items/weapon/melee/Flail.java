@@ -28,6 +28,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
@@ -46,6 +47,9 @@ public class Flail extends MeleeWeapon {
 		tier = 4;
 		ACC = 0.8f; //0.8x accuracy
 		//also cannot surprise attack, see Hero.canSurpriseAttack
+		handedType = HandedType.DUAL_PURPOSE;
+		addTags(ItemTag.SPECIAL_SYSTEM,
+				ItemTag.DUALHAND);
 	}
 
 	@Override

@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
@@ -35,6 +36,9 @@ public class WarHammer extends MeleeWeapon {
 
 		tier = 5;
 		ACC = 1.20f; //20% boost to accuracy
+		handedType = HandedType.TWO_HANDED;
+		addTags(ItemTag.BLUNT_SYSTEM,
+				ItemTag.TWOHAND);
 	}
 
 	@Override

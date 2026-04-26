@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
@@ -36,6 +37,8 @@ public class Dirk extends MeleeWeapon {
 		hitSoundPitch = 1f;
 
 		tier = 2;
+		addTags(ItemTag.DAGGER_SYSTEM,
+				ItemTag.ONEHAND);
 	}
 
 	@Override

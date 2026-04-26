@@ -38,9 +38,9 @@ public class WornShortsword extends MeleeWeapon {
 		tier = 1;
 		
 		bones = false;
-		handedType = HandedType.DUAL_PURPOSE;
 		addTags(ItemTag.ONEHAND,
-				ItemTag.IRON);
+				ItemTag.IRON,
+				ItemTag.SWORD_SYSTEM);
 	}
 
 	@Override

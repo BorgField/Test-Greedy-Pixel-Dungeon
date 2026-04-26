@@ -29,6 +29,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FlavourBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.ui.AttackIndicator;
@@ -44,6 +45,10 @@ public class RunicBlade extends MeleeWeapon {
 		hitSoundPitch = 1f;
 
 		tier = 4;
+		handedType = HandedType.DUAL_PURPOSE;
+		addTags(ItemTag.SPECIAL_SYSTEM,
+				ItemTag.DUALHAND,
+				ItemTag.MAGIC);
 	}
 
 	//Essentially it's a tier 4 weapon, with tier 3 base max damage, and tier 5 scaling.

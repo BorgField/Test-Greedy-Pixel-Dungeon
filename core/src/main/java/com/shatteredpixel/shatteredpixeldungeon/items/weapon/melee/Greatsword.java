@@ -37,7 +37,8 @@ public class Greatsword extends MeleeWeapon {
 
 		tier = 5;
 		handedType = HandedType.TWO_HANDED;
-		addTags(ItemTag.TWOHAND);
+		addTags(ItemTag.SWORD_SYSTEM,
+				ItemTag.TWOHAND);
 	}
 
 	@Override

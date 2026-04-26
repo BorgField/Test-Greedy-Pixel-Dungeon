@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
@@ -36,6 +37,9 @@ public class Glaive extends MeleeWeapon {
 		tier = 5;
 		DLY = 1.5f; //0.67x speed
 		RCH = 2;    //extra reach
+		handedType = HandedType.TWO_HANDED;
+		addTags(ItemTag.SPEAR_SYSTEM,
+				ItemTag.TWOHAND);
 	}
 
 	@Override
