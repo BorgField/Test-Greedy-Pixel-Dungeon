@@ -39,6 +39,7 @@ import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 import com.shatteredpixel.shatteredpixeldungeon.windows.WndOptions;
+import com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.BArray;
 import com.watabou.utils.PathFinder;
@@ -393,6 +394,10 @@ abstract public class KindOfWeapon extends EquipableItem {
                 handleSwiftEquipCooldown(hero);
                 isSwiftEquipping = false;
             }
+            
+            // 触发套装检测(优化版本:传入变化的物品)
+            EquipmentSet.onEquipmentChanged(hero, this);
+            
             return true;
         } else {
             isSwiftEquipping = false;
@@ -421,6 +426,8 @@ abstract public class KindOfWeapon extends EquipableItem {
         if (slot == null) return false;
         setWeaponInSlot(hero, slot, null);
         if (super.doUnequip(hero, collect, single)) {
+            // 触发套装检测(优化版本:传入变化的物品)
+            EquipmentSet.onEquipmentChanged(hero, this);
             return true;
         } else {
             setWeaponInSlot(hero, slot, this);

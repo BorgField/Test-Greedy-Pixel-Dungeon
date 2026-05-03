@@ -55,6 +55,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TalismanOfForesi
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
+import com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfRegrowth;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
@@ -236,6 +237,9 @@ public class Dungeon {
 
 		// 初始化事件系统（自动扫描并注册订阅类）
 		EventManager.init();
+		
+		// 初始化套装系统
+		EquipmentSet.initializeSets();
 
 		initialVersion = version = Game.versionCode;
 		challenges = SPDSettings.challenges();

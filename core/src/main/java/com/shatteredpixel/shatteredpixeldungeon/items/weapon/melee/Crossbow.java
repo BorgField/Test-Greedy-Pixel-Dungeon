@@ -26,6 +26,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.items.ItemTag;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
@@ -44,6 +45,9 @@ public class Crossbow extends MeleeWeapon {
 		//check Dart.class for additional properties
 		
 		tier = 4;
+		handedType = HandedType.DUAL_PURPOSE;
+		addTags(ItemTag.BOW_SYSTEM,
+				ItemTag.DUALHAND);
 	}
 
 	@Override

@@ -163,6 +163,10 @@ public abstract class KindofMisc extends EquipableItem {
 			}
 
 			hero.spendAndNext( timeToEquip(hero) );
+			
+			// 触发套装检测
+			com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet.onEquipmentChanged(hero, this);
+			
 			return true;
 
 		}
@@ -180,6 +184,9 @@ public abstract class KindofMisc extends EquipableItem {
 			} else if (hero.belongings.ring == this){
 				hero.belongings.ring = null;
 			}
+			
+			// 触发套装检测
+			com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet.onEquipmentChanged(hero, this);
 
 			return true;
 

@@ -135,6 +135,10 @@ public class Item implements Bundlable {
 			GameScene.pickUp( this, pos );
 			Sample.INSTANCE.play( Assets.Sounds.ITEM );
 			hero.spendAndNext( TIME_TO_PICK_UP );
+			
+			// 触发套装检测（背包变化）
+			com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet.onBackpackChanged(hero, this);
+			
 			return true;
 			
 		} else {
@@ -145,7 +149,11 @@ public class Item implements Bundlable {
 	public void doDrop( Hero hero ) {
 		hero.spendAndNext(TIME_TO_DROP);
 		int pos = hero.pos;
-		Dungeon.level.drop(detachAll(hero.belongings.backpack), pos).sprite.drop(pos);
+		Item droppedItem = detachAll(hero.belongings.backpack);
+		Dungeon.level.drop(droppedItem, pos).sprite.drop(pos);
+		
+		// 触发套装检测（背包变化）
+		com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet.onBackpackChanged(hero, droppedItem);
 	}
 
 	//resets an item's properties, to ensure consistency between runs

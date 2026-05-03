@@ -67,6 +67,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.mini.PotionOfMimic
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfArcana;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ParchmentScrap;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
+import com.shatteredpixel.shatteredpixeldungeon.items.sets.EquipmentSet;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
@@ -256,6 +257,9 @@ public class Armor extends EquipableItem {
 			activate(hero);
 			Talent.onItemEquipped(hero, this);
 			hero.spend( timeToEquip( hero ) );
+			
+			// 触发套装检测(优化版本:传入变化的物品)
+			EquipmentSet.onEquipmentChanged(hero, this);
 
 			if (Dungeon.hero.heroClass == HeroClass.WARRIOR && checkSeal() == null){
 				BrokenSeal seal = oldArmor != null ? oldArmor.checkSeal() : null;
@@ -356,6 +360,9 @@ public class Armor extends EquipableItem {
 
 			BrokenSeal.WarriorShield sealBuff = hero.buff(BrokenSeal.WarriorShield.class);
 			if (sealBuff != null) sealBuff.setArmor(null);
+			
+			// 触发套装检测(优化版本:传入变化的物品)
+			EquipmentSet.onEquipmentChanged(hero, this);
 
 			return true;
 
