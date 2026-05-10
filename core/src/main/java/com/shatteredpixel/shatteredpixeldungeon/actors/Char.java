@@ -21,6 +21,7 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
@@ -373,267 +374,46 @@ public abstract class Char extends Actor {
 	final public boolean attack( Char enemy ){
 		return attack(enemy, 1f, 0f, 1f);
 	}
-	
+
 	public boolean attack( Char enemy, float dmgMulti, float dmgBonus, float accMulti ) {
 
 		if (enemy == null) return false;
-		
-		boolean visibleFight = Dungeon.level.heroFOV[pos] || Dungeon.level.heroFOV[enemy.pos];
-		
-		// 标记攻击方进入战斗状态
+
+		// 创建伤害计算上下文
+		DamageContext ctx = new DamageContext(this, enemy, dmgMulti, dmgBonus, accMulti);
+
+		// 标记战斗状态
 		markCombat(this);
-		// 如果被攻击方是英雄,也标记为战斗状态
 		if (enemy instanceof Hero) {
 			markCombat(enemy);
 		}
 
-		if (enemy.isInvulnerable(getClass())) {
-
-			if (visibleFight) {
-				enemy.sprite.showStatus( CharSprite.POSITIVE, Messages.get(this, "invulnerable") );
-
-				Sample.INSTANCE.play(Assets.Sounds.HIT_PARRY, 1f, Random.Float(0.96f, 1.05f));
-			}
-
+		// ========== 阶段1: 无敌判定 ==========
+		if (handleInvulnerability(ctx)) {
 			return false;
-
-		} else if (hit( this, enemy, accMulti, false )) {
-			
-			int dr = Math.round(enemy.drRoll() * AscensionChallenge.statModifier(enemy));
-			
-			if (this instanceof Hero){
-				Hero h = (Hero)this;
-				if (h.belongings.attackingWeapon() instanceof MissileWeapon
-						&& h.subClass == HeroSubClass.SNIPER
-						&& !Dungeon.level.adjacent(h.pos, enemy.pos)){
-					dr = 0;
-				}
-
-				if (h.buff(MonkEnergy.MonkAbility.UnarmedAbilityTracker.class) != null){
-					dr = 0;
-				}
-			}
-
-			//we use a float here briefly so that we don't have to constantly round while
-			// potentially applying various multiplier effects
-			float dmg;
-			Preparation prep = buff(Preparation.class);
-			if (prep != null){
-				dmg = prep.damageRoll(this);
-				if (this == Dungeon.hero && Dungeon.hero.hasTalent(Talent.BOUNTY_HUNTER)) {
-					Buff.affect(Dungeon.hero, Talent.BountyHunterTracker.class, 0.0f);
-				}
-			} else {
-				dmg = damageRoll();
-			}
-
-			dmg = dmg*dmgMulti;
-
-			//flat damage bonus is affected by multipliers
-			dmg += dmgBonus;
-
-			if (enemy.buff(GuidingLight.Illuminated.class) != null){
-				enemy.buff(GuidingLight.Illuminated.class).detach();
-				if (this == Dungeon.hero && Dungeon.hero.hasTalent(Talent.SEARING_LIGHT)){
-					dmg += 1 + 2*Dungeon.hero.pointsInTalent(Talent.SEARING_LIGHT);
-				}
-				if (this != Dungeon.hero && Dungeon.hero.subClass == HeroSubClass.PRIEST){
-					enemy.damage(5+Dungeon.hero.lvl, GuidingLight.INSTANCE);
-				}
-			}
-
-			Berserk berserk = buff(Berserk.class);
-			if (berserk != null) dmg = berserk.damageFactor(dmg);
-
-			if (buff( Fury.class ) != null) {
-				dmg *= 1.5f;
-			}
-
-			if (buff( PowerOfMany.PowerBuff.class) != null){
-				if (buff( BeamingRay.BeamingRayBoost.class) != null
-					&& buff( BeamingRay.BeamingRayBoost.class).object == enemy.id()){
-					dmg *= 1.3f + 0.05f*Dungeon.hero.pointsInTalent(Talent.BEAMING_RAY);
-				} else {
-					dmg *= 1.25f;
-				}
-			}
-
-			for (ChampionEnemy buff : buffs(ChampionEnemy.class)){
-				dmg *= buff.meleeDamageFactor();
-			}
-
-			dmg *= AscensionChallenge.statModifier(this);
-
-			//friendly endure
-			Endure.EndureTracker endure = buff(Endure.EndureTracker.class);
-			if (endure != null) dmg = endure.damageFactor(dmg);
-
-			//enemy endure
-			endure = enemy.buff(Endure.EndureTracker.class);
-			if (endure != null){
-				dmg = endure.adjustDamageTaken(dmg);
-			}
-
-			if (enemy.buff(ScrollOfChallenge.ChallengeArena.class) != null){
-				dmg *= 0.67f;
-			}
-
-			if (Dungeon.hero.alignment == enemy.alignment
-					&& Dungeon.hero.buff(AuraOfProtection.AuraBuff.class) != null
-					&& (Dungeon.level.distance(enemy.pos, Dungeon.hero.pos) <= 2 || enemy.buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null)){
-				dmg *= 0.9f - 0.1f*Dungeon.hero.pointsInTalent(Talent.AURA_OF_PROTECTION);
-			}
-
-			if (enemy.buff(MonkEnergy.MonkAbility.Meditate.MeditateResistance.class) != null){
-				dmg *= 0.2f;
-			}
-
-			if ( buff(Weakness.class) != null ){
-				dmg *= 0.67f;
-			}
-
-			if (Dungeon.hero.buff(PotionOfBurst.BurstMini.class) != null){
-				dmg *= 1.3f;
-			}
-
-			//characters influenced by aggression deal 1/2 damage to bosses
-			if ( enemy.buff(StoneOfAggression.Aggression.class) != null
-					&& enemy.alignment == alignment
-					&& (Char.hasProp(enemy, Property.BOSS) || Char.hasProp(enemy, Property.MINIBOSS))){
-				dmg *= 0.5f;
-				//yog-dzewa specifically takes 1/4 damage
-				if (enemy instanceof YogDzewa){
-					dmg *= 0.5f;
-				}
-			}
-			
-			int effectiveDamage = enemy.defenseProc( this, Math.round(dmg) );
-			//do not trigger on-hit logic if defenseProc returned a negative value
-			if (effectiveDamage >= 0) {
-				effectiveDamage = Math.max(effectiveDamage - dr, 0);
-
-				if (enemy.buff(Viscosity.ViscosityTracker.class) != null) {
-					effectiveDamage = enemy.buff(Viscosity.ViscosityTracker.class).deferDamage(effectiveDamage);
-					enemy.buff(Viscosity.ViscosityTracker.class).detach();
-				}
-
-				//vulnerable specifically applies after armor reductions
-				if (enemy.buff(Vulnerable.class) != null) {
-					effectiveDamage *= 1.33f;
-				}
-
-				effectiveDamage = attackProc(enemy, effectiveDamage);
-			}
-			if (visibleFight) {
-				if (effectiveDamage > 0 || !enemy.blockSound(Random.Float(0.96f, 1.05f))) {
-					hitSound(Random.Float(0.87f, 1.15f));
-				}
-			}
-
-			// If the enemy is already dead, interrupt the attack.
-			// This matters as defence procs can sometimes inflict self-damage, such as armor glyphs.
-			if (!enemy.isAlive()){
-				return true;
-			}
-
-			enemy.damage( effectiveDamage, this );
-
-			if (buff(FireImbue.class) != null)  buff(FireImbue.class).proc(enemy);
-			if (buff(FrostImbue.class) != null) buff(FrostImbue.class).proc(enemy);
-
-			if (enemy.isAlive() && enemy.alignment != alignment && prep != null && prep.canKO(enemy)){
-				enemy.HP = 0;
-				if (enemy.buff(Brute.BruteRage.class) != null){
-					enemy.buff(Brute.BruteRage.class).detach();
-				}
-				if (!enemy.isAlive()) {
-					enemy.die(this);
-				} else {
-					//helps with triggering any on-damage effects that need to activate
-					enemy.damage(-1, this);
-					DeathMark.processFearTheReaper(enemy);
-				}
-				if (enemy.sprite != null) {
-					enemy.sprite.showStatus(CharSprite.NEGATIVE, Messages.get(Preparation.class, "assassinated"));
-				}
-			}
-
-			Talent.CombinedLethalityAbilityTracker combinedLethality = buff(Talent.CombinedLethalityAbilityTracker.class);
-			if (combinedLethality != null && this instanceof Hero && ((Hero) this).belongings.attackingWeapon() instanceof MeleeWeapon && combinedLethality.weapon != ((Hero) this).belongings.attackingWeapon()){
-				if ( enemy.isAlive() && enemy.alignment != alignment && !Char.hasProp(enemy, Property.BOSS)
-						&& !Char.hasProp(enemy, Property.MINIBOSS) &&
-						(enemy.HP/(float)enemy.HT) <= 0.4f*((Hero)this).pointsInTalent(Talent.COMBINED_LETHALITY)/3f) {
-					enemy.HP = 0;
-					if (enemy.buff(Brute.BruteRage.class) != null){
-						enemy.buff(Brute.BruteRage.class).detach();
-					}
-					if (!enemy.isAlive()) {
-						enemy.die(this);
-					} else {
-						//helps with triggering any on-damage effects that need to activate
-						enemy.damage(-1, this);
-						DeathMark.processFearTheReaper(enemy);
-					}
-					if (enemy.sprite != null) {
-						enemy.sprite.showStatus(CharSprite.NEGATIVE, Messages.get(Talent.CombinedLethalityAbilityTracker.class, "executed"));
-					}
-				}
-				combinedLethality.detach();
-			}
-
-			if (enemy.sprite != null) {
-				enemy.sprite.bloodBurstA(sprite.center(), effectiveDamage);
-				enemy.sprite.flash();
-			}
-
-			if (!enemy.isAlive() && visibleFight) {
-				if (enemy == Dungeon.hero) {
-					
-					if (this == Dungeon.hero) {
-						return true;
-					}
-
-					if (this instanceof WandOfLivingEarth.EarthGuardian
-							|| this instanceof MirrorImage || this instanceof PrismaticImage){
-						Badges.validateDeathFromFriendlyMagic();
-					}
-					Dungeon.fail( this );
-					GLog.n( Messages.capitalize(Messages.get(Char.class, "kill", name())) );
-					
-				} else if (this == Dungeon.hero) {
-					GLog.i( Messages.capitalize(Messages.get(Char.class, "defeat", enemy.name())) );
-				}
-			}
-			
-			return true;
-			
-		} else {
-
-			if (enemy.sprite != null){
-				if (tuftDodged){
-					//dooking is a playful sound Ferrets can make, like low pitched chirping
-					// I doubt this will translate, so it's only in English
-					if (Messages.lang() == Languages.ENGLISH && Random.Int(10) == 0) {
-						enemy.sprite.showStatusWithIcon(CharSprite.NEUTRAL, "dooked", FloatingText.TUFT);
-					} else {
-						enemy.sprite.showStatusWithIcon(CharSprite.NEUTRAL, enemy.defenseVerb(), FloatingText.TUFT);
-					}
-				} else {
-					enemy.sprite.showStatus(CharSprite.NEUTRAL, enemy.defenseVerb());
-				}
-			}
-			tuftDodged = false;
-			if (visibleFight) {
-				//TODO enemy.defenseSound? currently miss plays for monks/crab even when they parry
-				Sample.INSTANCE.play(Assets.Sounds.MISS);
-			}
-			if(enemy.buff(ShivaBangle.MultiArmBlows.class) != null) {
-					enemy.buff(ShivaBangle.MultiArmBlows.class).onEvade();
-			}
-
-			return false;
-			
 		}
+
+		// ========== 阶段2: 命中判定 ==========
+		calculateHit(ctx);
+		if (!ctx.isHit) {
+			showMissFeedback(ctx);
+			return false;
+		}
+
+		// ========== 阶段3-6: 伤害计算流水线 ==========
+		calculateBaseDamage(ctx);           // 基础伤害 + 防御骰
+		applyAttackerModifiers(ctx);        // 攻击者增伤因子
+		applyDefenderModifiers(ctx);        // 防御者减伤因子
+		processDefenseAndArmor(ctx);        // 防御Proc + 护甲减免
+
+		if (ctx.defenseProcRejected) {
+			return true; // 防御Proc拒绝了攻击
+		}
+
+		// ========== 阶段7: 后效处理 ==========
+		applyPostAttackEffects(ctx);
+
+		return true;
 	}
 
 	public static int INFINITE_ACCURACY = 1_000_000;
@@ -851,234 +631,56 @@ public abstract class Char extends Actor {
 		return cachedShield;
 	}
 	
+	@Deprecated
 	public void damage( int dmg, Object src ) {
-		
-		if (!isAlive() || dmg < 0) {
-			return;
-		}
+		damage(dmg, src, inferDamageType(src));
+	}
 
-		// 检查是否有DispellingMini的buff，如果有则处理法术伤害
-		PotionOfDispelling.DispellingMini dispellingBuff = buff(PotionOfDispelling.DispellingMini.class);
-		if (dispellingBuff != null) {
-			if (dispellingBuff.handleMagicDamage(src, dmg)) {
-				// 如果已处理伤害（免疫），则直接返回
-				return;
-			}
-		}
+	public void damage( int dmg, Object src, DamageType type ) {
+		if (!isAlive() || dmg < 0) return;
 
-		if(isInvulnerable(src.getClass())){
-			sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable"));
-			return;
-		}
+		// 阶段 0: 特殊中断处理 (收割流血、驱散、无敌)
+		if (buff(Sickle.HarvestBleedTracker.class) != null) { handleHarvestBleed(dmg, src); return; }
+		if (handleDispellingMagic(src, type, dmg)) return;
+		if (isInvulnerable(src.getClass())) { sprite.showStatus(CharSprite.POSITIVE, Messages.get(this, "invulnerable")); return; }
 
-		if (!(src instanceof LifeLink || src instanceof Hunger) && buff(LifeLink.class) != null){
-			HashSet<LifeLink> links = buffs(LifeLink.class);
-			for (LifeLink link : links.toArray(new LifeLink[0])){
-				if (Actor.findById(link.object) == null){
-					links.remove(link);
-					link.detach();
-				}
-			}
-			dmg = (int)Math.ceil(dmg / (float)(links.size()+1));
-			for (LifeLink link : links){
-				Char ch = (Char)Actor.findById(link.object);
-				if (ch != null) {
-					ch.damage(dmg, link);
-					if (!ch.isAlive()) {
-						link.detach();
-						if (ch == Dungeon.hero){
-							Badges.validateDeathFromFriendlyMagic();
-							Dungeon.fail(src);
-							GLog.n( Messages.get(LifeLink.class, "ondeath") );
-						}
-					}
-				}
-			}
-		}
+		// 阶段 1: 伤害分摊 (生命链接)
+		int rawDmg = distributeLifeLinkDamage(dmg, src, type);
 
-		//temporarily assign to a float to avoid rounding a bunch
-		float damage = dmg;
+		// 阶段 2: 全局减伤与状态清理 (光环、末日、死亡标记等)
+		float damage = applyDamageReductions(rawDmg, src, type);
 
-		//if dmg is from a character we already reduced it in Char.attack
-		if (!(src instanceof Char)) {
-			if (Dungeon.hero.alignment == alignment
-					&& Dungeon.hero.buff(AuraOfProtection.AuraBuff.class) != null
-					&& (Dungeon.level.distance(pos, Dungeon.hero.pos) <= 2 || buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null)) {
-				damage *= 0.9f - 0.1f*Dungeon.hero.pointsInTalent(Talent.AURA_OF_PROTECTION);
-			}
-		}
+		// 阶段 3: 伤害抵抗层 (免疫、抗性、冠军减免)
+		damage = applyResistancesAndChamps(damage, type);
 
-		if (buff(PowerOfMany.PowerBuff.class) != null){
-			if (buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null){
-				damage *= 0.70f - 0.05f*Dungeon.hero.pointsInTalent(Talent.LIFE_LINK);
-			} else {
-				damage *= 0.75f;
-			}
-		}
+		// 阶段 4: 二次减免层 (魔法减免、麻痹触发)
+		int roundedDmg = applySpecialDefense(Math.round(damage), type);
 
-		Terror t = buff(Terror.class);
-		if (t != null){
-			t.recover();
-		}
-		Dread d = buff(Dread.class);
-		if (d != null){
-			d.recover();
-		}
-		Charm c = buff(Charm.class);
-		if (c != null){
-			c.recover(src);
-		}
-		if (this.buff(Frost.class) != null){
-			Buff.detach( this, Frost.class );
-		}
-		if (this.buff(MagicalSleep.class) != null){
-			Buff.detach(this, MagicalSleep.class);
-		}
-		if (this.buff(Doom.class) != null && !isImmune(Doom.class)){
-			damage *= 1.67f;
-		}
-		if (alignment != Alignment.ALLY && this.buff(DeathMark.DeathMarkTracker.class) != null){
-			damage *= 1.25f;
-		}
+		// 阶段 5: 战斗修饰器 (模组扩展点)
+		roundedDmg = CombatModifier.INSTANCE.damage(this, roundedDmg, src);
 
-		if (buff(Sickle.HarvestBleedTracker.class) != null){
-			buff(Sickle.HarvestBleedTracker.class).detach();
+		// 阶段 6: 最终结算 (护盾、附魔特效、死亡判定)
+		applyFinalDamageAndDeath(roundedDmg, src, type);
+	}
 
-			if (!isImmune(Bleeding.class)){
-				Bleeding b = buff(Bleeding.class);
-				if (b == null){
-					b = new Bleeding();
-				}
-				b.announced = false;
-				b.set(dmg, Sickle.HarvestBleedTracker.class);
-				b.attachTo(this);
-				sprite.showStatus(CharSprite.WARNING, Messages.titleCase(b.name()) + " " + (int)b.level());
-				return;
-			}
-		}
-
-		Class<?> srcClass = src.getClass();
-		if (isImmune( srcClass )) {
-			damage = 0;
-		} else {
-			damage *= resist( srcClass );
-		}
-
-		dmg = Math.round(damage);
-
-		//we ceil these specifically to favor the player vs. champ dmg reduction
-		// most important vs. giant champions in the earlygame
-		for (ChampionEnemy buff : buffs(ChampionEnemy.class)){
-			dmg = (int) Math.ceil(dmg * buff.damageTakenFactor());
-		}
-		
-		//TODO improve this when I have proper damage source logic
-		if (AntiMagic.RESISTS.contains(src.getClass())){
-			dmg -= AntiMagic.drRoll(this, glyphLevel(AntiMagic.class));
-			if (buff(ArcaneArmor.class) != null) {
-				dmg -= Random.NormalIntRange(0, buff(ArcaneArmor.class).level());
-			}
-			if (dmg < 0) dmg = 0;
-		}
-		
-		if (buff( Paralysis.class ) != null) {
-			buff( Paralysis.class ).processDamage(dmg);
-		}
-		dmg = CombatModifier.INSTANCE.damage(this, dmg, src);
-
-		BrokenSeal.WarriorShield shield = buff(BrokenSeal.WarriorShield.class);
-		if (!(src instanceof Hunger)
-				&& dmg > 0
-				//either HP is already half or below (ignoring shield)
-				// or the hit will reduce it to half or below
-				&& (HP <= HT/2 || HP + shielding() - dmg <= HT/2)
-				&& shield != null && !shield.coolingDown()){
-			sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(buff(BrokenSeal.WarriorShield.class).maxShield()), FloatingText.SHIELDING);
-			shield.activate();
-		}
-
-//		dmg = CombatModifier.INSTANCE.damage(this, dmg, src);
-
-		int shielded = dmg;
-		dmg = ShieldBuff.processDamage(this, dmg, src);
-		shielded -= dmg;
-		HP -= dmg;
-
-		if (HP > 0 && buff(Grim.GrimTracker.class) != null){
-
-			float finalChance = buff(Grim.GrimTracker.class).maxChance;
-			finalChance *= (float)Math.pow( ((HT - HP) / (float)HT), 2);
-
-			if (Random.Float() < finalChance) {
-				int extraDmg = Math.round(HP*resist(Grim.class));
-				dmg += extraDmg;
-				HP -= extraDmg;
-
-				sprite.emitter().burst( ShadowParticle.UP, 5 );
-				if (!isAlive() && buff(Grim.GrimTracker.class).qualifiesForBadge){
-					Badges.validateGrimWeapon();
-				}
-			}
-		}
-
-		if (HP < 0 && src instanceof Char && alignment == Alignment.ENEMY){
-			if (((Char) src).buff(Kinetic.KineticTracker.class) != null){
-				int dmgToAdd = -HP;
-				dmgToAdd -= ((Char) src).buff(Kinetic.KineticTracker.class).conservedDamage;
-				dmgToAdd = Math.round(dmgToAdd * Weapon.Enchantment.genericProcChanceMultiplier((Char) src));
-				if (dmgToAdd > 0) {
-					Buff.affect((Char) src, Kinetic.ConservedDamage.class).setBonus(dmgToAdd);
-				}
-				((Char) src).buff(Kinetic.KineticTracker.class).detach();
-			}
-		}
-		
-		if (sprite != null) {
-			//defaults to normal damage icon if no other ones apply
-			int                                                         icon = FloatingText.PHYS_DMG;
-			if (NO_ARMOR_PHYSICAL_SOURCES.contains(src.getClass()))     icon = FloatingText.PHYS_DMG_NO_BLOCK;
-			if (AntiMagic.RESISTS.contains(src.getClass()))             icon = FloatingText.MAGIC_DMG;
-			if (src instanceof Pickaxe)                                 icon = FloatingText.PICK_DMG;
-
-			//special case for sniper when using ranged attacks
-			if (src == Dungeon.hero
-					&& Dungeon.hero.subClass == HeroSubClass.SNIPER
-					&& !Dungeon.level.adjacent(Dungeon.hero.pos, pos)
-					&& Dungeon.hero.belongings.attackingWeapon() instanceof MissileWeapon){
-				icon = FloatingText.PHYS_DMG_NO_BLOCK;
-			}
-
-			//special case for monk using unarmed abilities
-			if (src == Dungeon.hero
-					&& Dungeon.hero.buff(MonkEnergy.MonkAbility.UnarmedAbilityTracker.class) != null){
-				icon = FloatingText.PHYS_DMG_NO_BLOCK;
-			}
-
-			if (src instanceof Hunger)                                  icon = FloatingText.HUNGER;
-			if (src instanceof Burning)                                 icon = FloatingText.BURNING;
-			if (src instanceof Chill || src instanceof Frost)           icon = FloatingText.FROST;
-			if (src instanceof GeyserTrap || src instanceof StormCloud) icon = FloatingText.WATER;
-			if (src instanceof Burning)                                 icon = FloatingText.BURNING;
-			if (src instanceof Electricity)                             icon = FloatingText.SHOCKING;
-			if (src instanceof Bleeding)                                icon = FloatingText.BLEEDING;
-			if (src instanceof ToxicGas)                                icon = FloatingText.TOXIC;
-			if (src instanceof Corrosion)                               icon = FloatingText.CORROSION;
-			if (src instanceof Poison)                                  icon = FloatingText.POISON;
-			if (src instanceof Ooze)                                    icon = FloatingText.OOZE;
-			if (src instanceof Viscosity.DeferedDamage)                 icon = FloatingText.DEFERRED;
-			if (src instanceof Corruption)                              icon = FloatingText.CORRUPTION;
-			if (src instanceof AscensionChallenge)                      icon = FloatingText.AMULET;
-
-			sprite.showStatusWithIcon(CharSprite.NEGATIVE, Integer.toString(dmg + shielded), icon);
-		}
-
-		if (HP < 0) HP = 0;
-
-		if (!isAlive()) {
-			die( src );
-		} else if (HP == 0 && buff(DeathMark.DeathMarkTracker.class) != null){
-			DeathMark.processFearTheReaper(this);
-		}
+	private DamageType inferDamageType(Object src) {
+		// 临时过渡逻辑
+		if (src instanceof Hunger) return DamageType.HUNGER;
+		if (src instanceof Burning) return DamageType.BURNING;
+		if (src instanceof Frost || src instanceof Chill) return DamageType.FROST;
+		if (src instanceof Electricity) return DamageType.SHOCKING;
+		if (src instanceof Bleeding) return DamageType.BLEEDING;
+		if (src instanceof ToxicGas) return DamageType.TOXIC;
+		if (src instanceof Corrosion) return DamageType.CORROSION;
+		if (src instanceof Poison) return DamageType.POISON;
+		if (src instanceof Ooze) return DamageType.OOZE;
+		if (src instanceof Viscosity.DeferedDamage) return DamageType.DEFERRED;
+		if (src instanceof Corruption) return DamageType.CORRUPTION;
+		if (src instanceof AscensionChallenge) return DamageType.AMULET;
+		if (src instanceof Pickaxe) return DamageType.PICK;
+		if (AntiMagic.RESISTS.contains(src.getClass())) return DamageType.MAGICAL;
+		if (NO_ARMOR_PHYSICAL_SOURCES.contains(src.getClass())) return DamageType.PHYSICAL_NO_BLOCK;
+		return DamageType.PHYSICAL;
 	}
 
 	//these are misc. sources of physical damage which do not apply armor, they get a different icon
@@ -1140,6 +742,7 @@ public abstract class Char extends Actor {
 	//This is relevant because we call isAlive during drawing, which has both performance
 	//and thread coordination implications
 	public boolean deathMarked = false;
+	private int hitMissIcon = -1; // 用于在 attack 和 damage 之间传递命中/闪避图标信息
 	
 	public boolean isAlive() {
 		return HP > 0 || deathMarked;
@@ -1470,4 +1073,638 @@ public abstract class Char extends Actor {
 			}
 		}
 	}
+
+	/**
+	 * 攻击伤害计算的上下文数据载体
+	 * 用于在各计算阶段之间传递数据，为未来事件化做准备
+	 */
+	public static class DamageContext {
+		// === 输入参数 ===
+		public final Char attacker;
+		public final Char defender;
+		public final float damageMultiplier;
+		public final float damageBonus;
+		public final float accuracyMultiplier;
+
+		// === 阶段1: 命中判定结果 ===
+		public boolean isHit;
+
+		// === 阶段2: 基础伤害 ===
+		public float baseDamage;
+		public int defenseRoll;
+
+		// === 阶段6: 防御处理后结果 ===
+		public int effectiveDamage;
+		public boolean defenseProcRejected; // 防御Proc是否拒绝此次攻击
+
+		// === 辅助信息 ===
+		public final boolean visibleFight;
+		public Preparation preparation; // 刺客准备状态
+
+		public DamageContext(Char attacker, Char defender,
+							float dmgMulti, float dmgBonus, float accMulti) {
+			this.attacker = attacker;
+			this.defender = defender;
+			this.damageMultiplier = dmgMulti;
+			this.damageBonus = dmgBonus;
+			this.accuracyMultiplier = accMulti;
+			this.visibleFight = Dungeon.level.heroFOV[attacker.pos]
+					|| Dungeon.level.heroFOV[defender.pos];
+		}
+	}
+
+	// ==================== attack系统 ====================
+	/**
+	 * 阶段1: 检查目标是否无敌
+	 * @return true表示无敌，攻击无效
+	 */
+	private boolean handleInvulnerability(DamageContext ctx) {
+		if (ctx.defender.isInvulnerable(getClass())) {
+			if (ctx.visibleFight) {
+				ctx.defender.sprite.showStatus(CharSprite.POSITIVE,
+					Messages.get(this, "invulnerable"));
+				Sample.INSTANCE.play(Assets.Sounds.HIT_PARRY, 1f,
+					Random.Float(0.96f, 1.05f));
+			}
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 阶段2: 执行命中判定，记录结果到ctx
+	 */
+	private void calculateHit(DamageContext ctx) {
+		ctx.isHit = hit(ctx.attacker, ctx.defender, ctx.accuracyMultiplier, false);
+		// tuftDodged 已在 hit 静态方法中设置
+	}
+
+	/**
+	 * 阶段3: 计算基础伤害和防御骰
+	 */
+	private void calculateBaseDamage(DamageContext ctx) {
+		// 防御骰计算
+		ctx.defenseRoll = Math.round(
+			ctx.defender.drRoll() * AscensionChallenge.statModifier(ctx.defender)
+		);
+
+		// 特殊职业破防逻辑
+		if (ctx.attacker instanceof Hero) {
+			Hero h = (Hero) ctx.attacker;
+			if (h.belongings.attackingWeapon() instanceof MissileWeapon
+					&& h.subClass == HeroSubClass.SNIPER
+					&& !Dungeon.level.adjacent(h.pos, ctx.defender.pos)) {
+				ctx.defenseRoll = 0;
+			}
+			if (h.buff(MonkEnergy.MonkAbility.UnarmedAbilityTracker.class) != null) {
+				ctx.defenseRoll = 0;
+			}
+		}
+
+		// 基础伤害骰
+		ctx.preparation = ctx.attacker.buff(Preparation.class);
+		if (ctx.preparation != null) {
+			ctx.baseDamage = ctx.preparation.damageRoll(ctx.attacker);
+			if (ctx.attacker == Dungeon.hero
+					&& Dungeon.hero.hasTalent(Talent.BOUNTY_HUNTER)) {
+				Buff.affect(Dungeon.hero, Talent.BountyHunterTracker.class, 0.0f);
+			}
+		} else {
+			ctx.baseDamage = ctx.attacker.damageRoll();
+		}
+
+		// 应用传入的倍率和加成
+		ctx.baseDamage = ctx.baseDamage * ctx.damageMultiplier + ctx.damageBonus;
+	}
+
+	/**
+	 * 阶段4: 应用攻击者侧的所有增伤/减伤因子
+	 */
+	private void applyAttackerModifiers(DamageContext ctx) {
+		float dmg = ctx.baseDamage;
+
+		// 光照易伤
+		if (ctx.defender.buff(GuidingLight.Illuminated.class) != null) {
+			ctx.defender.buff(GuidingLight.Illuminated.class).detach();
+			if (ctx.attacker == Dungeon.hero
+					&& Dungeon.hero.hasTalent(Talent.SEARING_LIGHT)) {
+				dmg += 1 + 2 * Dungeon.hero.pointsInTalent(Talent.SEARING_LIGHT);
+			}
+			if (ctx.attacker != Dungeon.hero
+					&& Dungeon.hero.subClass == HeroSubClass.PRIEST) {
+				ctx.defender.damage(5 + Dungeon.hero.lvl, GuidingLight.INSTANCE);
+			}
+		}
+
+		// 狂战士怒意
+		Berserk berserk = ctx.attacker.buff(Berserk.class);
+		if (berserk != null) dmg = berserk.damageFactor(dmg);
+
+		// 狂怒
+		if (ctx.attacker.buff(Fury.class) != null) {
+			dmg *= 1.5f;
+		}
+
+		// 万众之力
+		if (ctx.attacker.buff(PowerOfMany.PowerBuff.class) != null) {
+			if (ctx.attacker.buff(BeamingRay.BeamingRayBoost.class) != null
+					&& ctx.attacker.buff(BeamingRay.BeamingRayBoost.class).object
+					== ctx.defender.id()) {
+				dmg *= 1.3f + 0.05f * Dungeon.hero.pointsInTalent(Talent.BEAMING_RAY);
+			} else {
+				dmg *= 1.25f;
+			}
+		}
+
+		// 冠军敌人增伤
+		for (ChampionEnemy buff : ctx.attacker.buffs(ChampionEnemy.class)) {
+			dmg *= buff.meleeDamageFactor();
+		}
+
+		// 升天挑战修正
+		dmg *= AscensionChallenge.statModifier(ctx.attacker);
+
+		// 友方坚韧
+		Endure.EndureTracker endure = ctx.attacker.buff(Endure.EndureTracker.class);
+		if (endure != null) dmg = endure.damageFactor(dmg);
+
+		// 虚弱减伤
+		if (ctx.attacker.buff(Weakness.class) != null) {
+			dmg *= 0.67f;
+		}
+
+		// 爆裂药水增伤
+		if (Dungeon.hero.buff(PotionOfBurst.BurstMini.class) != null) {
+			dmg *= 1.3f;
+		}
+
+		// Boss挑衅减伤
+		if (ctx.defender.buff(StoneOfAggression.Aggression.class) != null
+				&& ctx.defender.alignment == ctx.attacker.alignment
+				&& (Char.hasProp(ctx.defender, Property.BOSS)
+				|| Char.hasProp(ctx.defender, Property.MINIBOSS))) {
+			dmg *= 0.5f;
+			if (ctx.defender instanceof YogDzewa) {
+				dmg *= 0.5f;
+			}
+		}
+
+		ctx.baseDamage = dmg; // 保存阶段性结果
+	}
+
+	/**
+	 * 阶段5: 应用防御者侧的所有减伤因子
+	 */
+	private void applyDefenderModifiers(DamageContext ctx) {
+		float dmg = ctx.baseDamage;
+
+		// 敌方坚韧
+		Endure.EndureTracker endure = ctx.defender.buff(Endure.EndureTracker.class);
+		if (endure != null) {
+			dmg = endure.adjustDamageTaken(dmg);
+		}
+
+		// 挑战竞技场
+		if (ctx.defender.buff(ScrollOfChallenge.ChallengeArena.class) != null) {
+			dmg *= 0.67f;
+		}
+
+		// 守护光环
+		if (Dungeon.hero.alignment == ctx.defender.alignment
+				&& Dungeon.hero.buff(AuraOfProtection.AuraBuff.class) != null
+				&& (Dungeon.level.distance(ctx.defender.pos, Dungeon.hero.pos) <= 2
+				|| ctx.defender.buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null)) {
+			dmg *= 0.9f - 0.1f * Dungeon.hero.pointsInTalent(Talent.AURA_OF_PROTECTION);
+		}
+
+		// 冥想抵抗
+		if (ctx.defender.buff(MonkEnergy.MonkAbility.Meditate.MeditateResistance.class) != null) {
+			dmg *= 0.2f;
+		}
+
+		ctx.baseDamage = dmg;
+	}
+
+	/**
+	 * 阶段6: 防御Proc、护甲减免、脆弱等
+	 */
+	private void processDefenseAndArmor(DamageContext ctx) {
+		// 防御Proc（可能拒绝攻击）
+		int damageAfterProc = ctx.defender.defenseProc(
+			ctx.attacker, Math.round(ctx.baseDamage)
+		);
+
+		if (damageAfterProc < 0) {
+			ctx.defenseProcRejected = true;
+			ctx.effectiveDamage = damageAfterProc;
+			return;
+		}
+
+		ctx.defenseProcRejected = false;
+
+		// 护甲减免
+		int effectiveDamage = Math.max(damageAfterProc - ctx.defenseRoll, 0);
+
+		// 粘稠护甲延迟伤害
+		if (ctx.defender.buff(Viscosity.ViscosityTracker.class) != null) {
+			effectiveDamage = ctx.defender.buff(Viscosity.ViscosityTracker.class)
+				.deferDamage(effectiveDamage);
+			ctx.defender.buff(Viscosity.ViscosityTracker.class).detach();
+		}
+
+		// 脆弱（在护甲后应用）
+		if (ctx.defender.buff(Vulnerable.class) != null) {
+			effectiveDamage *= 1.33f;
+		}
+
+		// 攻击者Proc（冠军敌人等）
+		effectiveDamage = ctx.attacker.attackProc(ctx.defender, effectiveDamage);
+
+		ctx.effectiveDamage = effectiveDamage;
+	}
+
+	/**
+	 * 阶段7: 命中音效、特殊斩杀、视觉反馈、战斗日志
+	 */
+	private void applyPostAttackEffects(DamageContext ctx) {
+		// 命中音效
+		if (ctx.visibleFight) {
+			if (ctx.effectiveDamage > 0
+					|| !ctx.defender.blockSound(Random.Float(0.96f, 1.05f))) {
+				ctx.attacker.hitSound(Random.Float(0.87f, 1.15f));
+			}
+		}
+
+		// 防御Proc可能已致死
+		if (!ctx.defender.isAlive()) return;
+
+		// 施加基础伤害
+		ctx.defender.damage(ctx.effectiveDamage, ctx.attacker);
+
+		// 火焰/冰霜附魔
+		if (ctx.attacker.buff(FireImbue.class) != null)
+			ctx.attacker.buff(FireImbue.class).proc(ctx.defender);
+		if (ctx.attacker.buff(FrostImbue.class) != null)
+			ctx.attacker.buff(FrostImbue.class).proc(ctx.defender);
+
+		// 刺客准备斩杀
+		handleAssassinationKill(ctx);
+
+		// 组合杀伤斩杀
+		handleCombinedLethalityKill(ctx);
+
+		// 视觉反馈
+		if (ctx.defender.sprite != null) {
+			ctx.defender.sprite.bloodBurstA(
+				ctx.attacker.sprite.center(), ctx.effectiveDamage
+			);
+			ctx.defender.sprite.flash();
+		}
+
+		// 战斗日志
+		logCombatResult(ctx);
+	}
+
+	/**
+	 * 处理刺客准备的斩杀效果
+	 */
+	private void handleAssassinationKill(DamageContext ctx) {
+		if (ctx.defender.isAlive()
+				&& ctx.defender.alignment != ctx.attacker.alignment
+				&& ctx.preparation != null
+				&& ctx.preparation.canKO(ctx.defender)) {
+
+			ctx.defender.HP = 0;
+			if (ctx.defender.buff(Brute.BruteRage.class) != null) {
+				ctx.defender.buff(Brute.BruteRage.class).detach();
+			}
+			if (!ctx.defender.isAlive()) {
+				ctx.defender.die(ctx.attacker);
+			} else {
+				ctx.defender.damage(-1, ctx.attacker);
+				DeathMark.processFearTheReaper(ctx.defender);
+			}
+			if (ctx.defender.sprite != null) {
+				ctx.defender.sprite.showStatus(CharSprite.NEGATIVE,
+					Messages.get(Preparation.class, "assassinated"));
+			}
+		}
+	}
+
+	/**
+	 * 处理组合杀伤的斩杀效果
+	 */
+	private void handleCombinedLethalityKill(DamageContext ctx) {
+		Talent.CombinedLethalityAbilityTracker combinedLethality =
+			ctx.attacker.buff(Talent.CombinedLethalityAbilityTracker.class);
+
+		if (combinedLethality != null
+				&& ctx.attacker instanceof Hero
+				&& ((Hero) ctx.attacker).belongings.attackingWeapon() instanceof MeleeWeapon
+				&& combinedLethality.weapon != ((Hero) ctx.attacker).belongings.attackingWeapon()) {
+
+			if (ctx.defender.isAlive()
+					&& ctx.defender.alignment != ctx.attacker.alignment
+					&& !Char.hasProp(ctx.defender, Property.BOSS)
+					&& !Char.hasProp(ctx.defender, Property.MINIBOSS)
+					&& (ctx.defender.HP / (float) ctx.defender.HT)
+					<= 0.4f * ((Hero) ctx.attacker).pointsInTalent(
+						Talent.COMBINED_LETHALITY) / 3f) {
+
+				ctx.defender.HP = 0;
+				if (ctx.defender.buff(Brute.BruteRage.class) != null) {
+					ctx.defender.buff(Brute.BruteRage.class).detach();
+				}
+				if (!ctx.defender.isAlive()) {
+					ctx.defender.die(ctx.attacker);
+				} else {
+					ctx.defender.damage(-1, ctx.attacker);
+					DeathMark.processFearTheReaper(ctx.defender);
+				}
+				if (ctx.defender.sprite != null) {
+					ctx.defender.sprite.showStatus(CharSprite.NEGATIVE,
+						Messages.get(Talent.CombinedLethalityAbilityTracker.class, "executed"));
+				}
+			}
+			combinedLethality.detach();
+		}
+	}
+
+	/**
+	 * 记录战斗结果到日志
+	 */
+	private void logCombatResult(DamageContext ctx) {
+		if (!ctx.defender.isAlive() && ctx.visibleFight) {
+			if (ctx.defender == Dungeon.hero) {
+				if (ctx.attacker == Dungeon.hero) return;
+
+				if (ctx.attacker instanceof WandOfLivingEarth.EarthGuardian
+						|| ctx.attacker instanceof MirrorImage
+						|| ctx.attacker instanceof PrismaticImage) {
+					Badges.validateDeathFromFriendlyMagic();
+				}
+				Dungeon.fail(ctx.attacker);
+				GLog.n(Messages.capitalize(
+					Messages.get(Char.class, "kill", ctx.attacker.name())));
+			} else if (ctx.attacker == Dungeon.hero) {
+				GLog.i(Messages.capitalize(
+					Messages.get(Char.class, "defeat", ctx.defender.name())));
+			}
+		}
+	}
+
+	/**
+	 * 显示未命中的视觉和听觉反馈
+	 */
+	private void showMissFeedback(DamageContext ctx) {
+		if (ctx.defender.sprite != null) {
+			// 检查是否是雪貂绒球闪避
+			if (tuftDodged) {
+				if (Messages.lang() == Languages.ENGLISH && Random.Int(10) == 0) {
+					ctx.defender.sprite.showStatusWithIcon(
+						CharSprite.NEUTRAL, "dooked", FloatingText.TUFT);
+				} else {
+					ctx.defender.sprite.showStatusWithIcon(
+						CharSprite.NEUTRAL, ctx.defender.defenseVerb(), FloatingText.TUFT);
+				}
+			} else {
+				ctx.defender.sprite.showStatus(
+					CharSprite.NEUTRAL, ctx.defender.defenseVerb());
+			}
+		}
+		tuftDodged = false; // 重要：重置状态
+
+		if (ctx.visibleFight) {
+			Sample.INSTANCE.play(Assets.Sounds.MISS);
+		}
+
+		// 湿婆手镯闪避回调
+		if (ctx.defender.buff(ShivaBangle.MultiArmBlows.class) != null) {
+			ctx.defender.buff(ShivaBangle.MultiArmBlows.class).onEvade();
+		}
+	}
+
+	// ==================== Damage 系统重构 ====================
+
+	private void handleHarvestBleed(int dmg, Object src) {
+		buff(Sickle.HarvestBleedTracker.class).detach();
+		if (!isImmune(Bleeding.class)) {
+			Bleeding b = buff(Bleeding.class);
+			if (b == null) b = new Bleeding();
+			b.announced = false;
+			b.set(dmg, Sickle.HarvestBleedTracker.class);
+			b.attachTo(this);
+			sprite.showStatus(CharSprite.WARNING, Messages.titleCase(b.name()) + " " + (int)b.level());
+		}
+	}
+
+	private boolean handleDispellingMagic(Object src, DamageType type, int dmg) {
+		PotionOfDispelling.DispellingMini buff = buff(PotionOfDispelling.DispellingMini.class);
+		return buff != null && buff.handleMagicDamage(src, dmg);
+	}
+
+	private int distributeLifeLinkDamage(int dmg, Object src, DamageType type) {
+		if (src instanceof LifeLink || src instanceof Hunger || buff(LifeLink.class) == null) return dmg;
+		HashSet<LifeLink> links = buffs(LifeLink.class);
+		for (LifeLink link : links.toArray(new LifeLink[0])) {
+			if (Actor.findById(link.object) == null) { links.remove(link); link.detach(); }
+		}
+		int perTarget = (int) Math.ceil(dmg / (float) (links.size() + 1));
+		for (LifeLink link : links) {
+			Char ch = (Char) Actor.findById(link.object);
+			if (ch != null) {
+				ch.damage(perTarget, link, type);
+				if (!ch.isAlive()) {
+					link.detach();
+					if (ch == Dungeon.hero) {
+						Badges.validateDeathFromFriendlyMagic();
+						Dungeon.fail(src);
+						GLog.n(Messages.get(LifeLink.class, "ondeath"));
+					}
+				}
+			}
+		}
+		return perTarget;
+	}
+
+	private float applyDamageReductions(float damage, Object src, DamageType type) {
+		// 全局百分比减伤
+		if (!(src instanceof Char) && Dungeon.hero.alignment == alignment
+				&& Dungeon.hero.buff(AuraOfProtection.AuraBuff.class) != null
+				&& (Dungeon.level.distance(pos, Dungeon.hero.pos) <= 2 || buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null)) {
+			damage *= 0.9f - 0.1f * Dungeon.hero.pointsInTalent(Talent.AURA_OF_PROTECTION);
+		}
+		if (buff(PowerOfMany.PowerBuff.class) != null) {
+			damage *= (buff(LifeLinkSpell.LifeLinkSpellBuff.class) != null) 
+				? 0.70f - 0.05f * Dungeon.hero.pointsInTalent(Talent.LIFE_LINK) : 0.75f;
+		}
+
+		// 状态清理与修正
+		if (buff(Terror.class) != null) buff(Terror.class).recover();
+		if (buff(Dread.class) != null) buff(Dread.class).recover();
+		if (buff(Charm.class) != null) buff(Charm.class).recover(src);
+		if (buff(Frost.class) != null) Buff.detach(this, Frost.class);
+		if (buff(MagicalSleep.class) != null) Buff.detach(this, MagicalSleep.class);
+
+		// 增伤因子
+		if (buff(Doom.class) != null && !isImmune(Doom.class)) damage *= 1.67f;
+		if (alignment != Alignment.ALLY && buff(DeathMark.DeathMarkTracker.class) != null) damage *= 1.25f;
+		return damage;
+	}
+
+	private float applyResistancesAndChamps(float damage, DamageType type) {
+		Class<?> effectClass = getClassForDamageType(type);
+		damage = isImmune(effectClass) ? 0 : damage * resist(effectClass);
+		// 冠军敌人减免
+		for (ChampionEnemy buff : buffs(ChampionEnemy.class)) {
+			damage = (int) Math.ceil(damage * buff.damageTakenFactor());
+		}
+		return damage;
+	}
+
+	private Class<?> getClassForDamageType(DamageType type) {
+		switch (type) {
+			case BURNING: return Burning.class;
+			case FROST: return Frost.class;
+			case SHOCKING: return Electricity.class;
+			case BLEEDING: return Bleeding.class;
+			case TOXIC: return ToxicGas.class;
+			case CORROSION: return Corrosion.class;
+			case POISON: return Poison.class;
+			case OOZE: return Ooze.class;
+			case DEFERRED: return Viscosity.DeferedDamage.class;
+			case CORRUPTION: return Corruption.class;
+			case AMULET: return AscensionChallenge.class;
+			default: return Object.class;
+		}
+	}
+
+	private int applySpecialDefense(int dmg, DamageType type) {
+		// 魔法伤害特殊减免
+		if (type == DamageType.MAGICAL || type == DamageType.MAGICAL_DISPELLING) {
+			dmg -= AntiMagic.drRoll(this, glyphLevel(AntiMagic.class));
+			if (buff(ArcaneArmor.class) != null) dmg -= Random.NormalIntRange(0, buff(ArcaneArmor.class).level());
+			if (dmg < 0) dmg = 0;
+		}
+		// 麻痹处理
+		if (buff(Paralysis.class) != null) buff(Paralysis.class).processDamage(dmg);
+		return dmg;
+	}
+
+	private void applyFinalDamageAndDeath(int dmg, Object src, DamageType type) {
+		// 护盾激活逻辑
+		BrokenSeal.WarriorShield shield = buff(BrokenSeal.WarriorShield.class);
+		if (!(src instanceof Hunger) && dmg > 0 && (HP <= HT / 2 || HP + shielding() - dmg <= HT / 2)
+				&& shield != null && !shield.coolingDown()) {
+			sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(shield.maxShield()), FloatingText.SHIELDING);
+			shield.activate();
+		}
+
+		int shielded = dmg;
+		if (!(src instanceof Hunger)) {
+			for (ShieldBuff s : buffs(ShieldBuff.class)) {
+				dmg = s.absorbDamage(dmg);
+				if (dmg == 0) break;
+			}
+		}
+		shielded -= dmg;
+		HP -= dmg;
+
+		// Grim 附魔特效
+		if (HP > 0 && buff(Grim.GrimTracker.class) != null) {
+			float finalChance = buff(Grim.GrimTracker.class).maxChance * (float) Math.pow(((HT - HP) / (float) HT), 2);
+			if (Random.Float() < finalChance) {
+				int extraDmg = Math.round(HP * resist(Grim.class));
+				dmg += extraDmg; HP -= extraDmg;
+				sprite.emitter().burst(ShadowParticle.UP, 5);
+				if (!isAlive() && buff(Grim.GrimTracker.class).qualifiesForBadge) Badges.validateGrimWeapon();
+			}
+		}
+
+		// Kinetic 储存
+		if (HP < 0 && src instanceof Char && alignment == Alignment.ENEMY) {
+			Kinetic.KineticTracker tracker = ((Char) src).buff(Kinetic.KineticTracker.class);
+			if (tracker != null) {
+				int dmgToAdd = -HP - tracker.conservedDamage;
+				dmgToAdd = Math.round(dmgToAdd * Weapon.Enchantment.genericProcChanceMultiplier((Char) src));
+				if (dmgToAdd > 0) Buff.affect((Char) src, Kinetic.ConservedDamage.class).setBonus(dmgToAdd);
+				tracker.detach();
+			}
+		}
+
+		showDamageIcon(dmg + shielded, type);
+		if (HP < 0) HP = 0;
+		if (!isAlive()) die(src);
+		else if (HP == 0 && buff(DeathMark.DeathMarkTracker.class) != null) DeathMark.processFearTheReaper(this);
+	}
+
+	private void showDamageIcon(int totalDmg, DamageType type) {
+		if (sprite == null) return;
+		int icon;
+		switch (type) {
+			case PHYSICAL:
+				icon = FloatingText.PHYS_DMG;
+				break;
+			case PHYSICAL_NO_BLOCK:
+				icon = FloatingText.PHYS_DMG_NO_BLOCK;
+				break;
+			case MAGICAL:
+			case MAGICAL_DISPELLING:
+				icon = FloatingText.MAGIC_DMG;
+				break;
+			case PICK:
+				icon = FloatingText.PICK_DMG;
+				break;
+			case HUNGER:
+				icon = FloatingText.HUNGER;
+				break;
+			case BURNING:
+				icon = FloatingText.BURNING;
+				break;
+			case FROST:
+				icon = FloatingText.FROST;
+				break;
+			case WATER:
+				icon = FloatingText.WATER;
+				break;
+			case SHOCKING:
+				icon = FloatingText.SHOCKING;
+				break;
+			case BLEEDING:
+				icon = FloatingText.BLEEDING;
+				break;
+			case TOXIC:
+				icon = FloatingText.TOXIC;
+				break;
+			case CORROSION:
+				icon = FloatingText.CORROSION;
+				break;
+			case POISON:
+				icon = FloatingText.POISON;
+				break;
+			case OOZE:
+				icon = FloatingText.OOZE;
+				break;
+			case DEFERRED:
+				icon = FloatingText.DEFERRED;
+				break;
+			case CORRUPTION:
+				icon = FloatingText.CORRUPTION;
+				break;
+			case AMULET:
+				icon = FloatingText.AMULET;
+				break;
+			default:
+				icon = FloatingText.PHYS_DMG;
+				break;
+		}
+		if ((icon == FloatingText.PHYS_DMG || icon == FloatingText.PHYS_DMG_NO_BLOCK) && hitMissIcon != -1) {
+			if (icon == FloatingText.PHYS_DMG_NO_BLOCK) hitMissIcon += 18;
+			icon = hitMissIcon;
+			hitMissIcon = -1;
+		}
+		sprite.showStatusWithIcon(CharSprite.NEGATIVE, Integer.toString(totalDmg), icon);
+	}
+
+	// ==================== Damage 系统重构 ====================
 }
