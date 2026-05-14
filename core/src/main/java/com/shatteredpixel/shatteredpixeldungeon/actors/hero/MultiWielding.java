@@ -3,6 +3,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.items.KindOfWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.offhand.OffHandWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 
 import java.util.ArrayList;
@@ -88,7 +89,7 @@ public class MultiWielding {
     /**
      * 判断指定组是否为真双持状态
      * @param group 组号（0=第一组，1=第二组）
-     * @return true 如果该组装备了两把非盾牌武器
+     * @return true 如果该组装备了两把非盾牌且参与战斗的武器
      */
     private boolean isTrueDualGroup(int group) {
         if (group < 0 || group > 1) {
@@ -102,7 +103,15 @@ public class MultiWielding {
         KindOfWeapon off = weapons[offIdx];
 
         if (main == null || off == null) return false;
-        return !KindOfWeapon.isShield(main) && !KindOfWeapon.isShield(off);
+        
+        // 排除盾牌
+        if (KindOfWeapon.isShield(main) || KindOfWeapon.isShield(off)) return false;
+        
+        // 排除纯辅助型副手装备
+        if (off instanceof OffHandWeapon && !((OffHandWeapon) off).participatesInCombat()) return false;
+
+
+        return true;
     }
     
     /**
@@ -158,7 +167,10 @@ public class MultiWielding {
         List<KindOfWeapon> reachableWeapons = new ArrayList<>();
         for (KindOfWeapon w : weapons) {
             if (w != null && w.canReach(hero, enemy.pos)) {
-                reachableWeapons.add(w);
+                // 排除纯辅助型副手装备（不参与战斗计算）
+                if (!(w instanceof OffHandWeapon) || ((OffHandWeapon) w).participatesInCombat()) {
+                    reachableWeapons.add(w);
+                }
             }
         }
 
@@ -202,9 +214,12 @@ public class MultiWielding {
         boolean anyHit = false;
         // 主手攻击
         anyHit |= executeWeaponAttack(enemy, dmgMulti, dmgBonus, accMulti, mainIdx, true);
-        // 副手攻击（仅当副手存在且不是盾牌）
+        
+        // 副手攻击（仅当副手存在、不是盾牌、且参与战斗）
         KindOfWeapon offWep = weapons[offIdx];
-        if (enemy.isAlive() && offWep != null && !KindOfWeapon.isShield(offWep)) {
+        if (enemy.isAlive() && offWep != null 
+                && !KindOfWeapon.isShield(offWep)
+                && (!(offWep instanceof OffHandWeapon) || ((OffHandWeapon) offWep).participatesInCombat())) {
             anyHit |= executeWeaponAttack(enemy, dmgMulti, 0, accMulti, offIdx, false);
         }
         return anyHit;
@@ -249,6 +264,12 @@ public class MultiWielding {
         int offIdx = group * 2 + 1;
         KindOfWeapon main = weapons[mainIdx];
         KindOfWeapon off = weapons[offIdx];
+        
+        // 纯辅助装备不参与双盾判定
+        if (off instanceof OffHandWeapon && !((OffHandWeapon) off).participatesInCombat()) {
+            return false;
+        }
+        
         return main != null && off != null
                 && KindOfWeapon.isShield(main)
                 && KindOfWeapon.isShield(off);
